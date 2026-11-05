@@ -41,3 +41,17 @@ describe("ampliação gradual do raio", () => {
     expect(expandRadius([], cfg)).toMatchObject({ rows: [], radiusKm: 40, expanded: true, outsideServiceArea: false });
   });
 });
+
+describe("ordem com prestadores fora da área", () => {
+  it("quem atende a região vem antes, mesmo com score menor", async () => {
+    const { sortAndView } = await import("../services/professionalView.js");
+    const mk = (id, km, rating, outside) => ({
+      id, name: `P${id}`, role_title: "X", distance_km: km, rating_avg: rating, rating_count: 20,
+      contacts_count: 20, services_done: 20, weekdays: [1], categories: ["eletrica"], services: [],
+      ...(outside ? { outside_service_area: true } : {}),
+    });
+    const out = sortAndView([mk(1, 2, 5, true), mk(2, 9, 3.2, false)], { sort: "relevance", radiusKm: 40 });
+    expect(out.map((p) => p.id)).toEqual([2, 1]);
+    expect(out[1].outsideServiceArea).toBe(true);
+  });
+});

@@ -88,6 +88,25 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Pedido (clientes) */}
+      {authUser?.role === "client" && (
+        <section className="px-5 pt-6">
+          <button
+            className="pressable w-full text-left flex items-center gap-3.5 bg-white rounded-card shadow-card p-4"
+            onClick={() => navigate("/pedido/novo", { state: { categoryId: activeCat } })}
+          >
+            <span className="w-11 h-11 rounded-[14px] bg-primary flex items-center justify-center flex-none shadow-glow">
+              <Icon name="sparkle" size={20} color="#fff" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-extrabold text-[14.5px]">Descreva o que você precisa</span>
+              <span className="block text-[12.5px] text-inksoft font-medium">Mostramos quem atende perto de você no dia certo</span>
+            </span>
+            <Icon name="chevronRight" size={18} color="#A3A7B3" />
+          </button>
+        </section>
+      )}
+
       {/* Categorias */}
       <section className="px-5 pt-7">
         <div className="flex items-baseline justify-between mb-3.5">

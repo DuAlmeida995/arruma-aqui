@@ -50,7 +50,10 @@ function sortAndView(rows, { sort = "relevance", weekday, radiusKm } = {}) {
   } else {
     list = rank(list, { weekday, radiusKm });
   }
-  return list.map(toView);
+  // Quem atende a região do cliente vem sempre antes de quem só entrou pela ampliação do raio
+  const inside = list.filter((c) => !c.row.outside_service_area);
+  const outside = list.filter((c) => c.row.outside_service_area);
+  return [...inside, ...outside].map(toView);
 }
 
 module.exports = { toCandidate, toView, sortAndView };
