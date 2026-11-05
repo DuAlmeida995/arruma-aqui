@@ -44,7 +44,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 7 — Qualidade e segurança (Ativ. 7)
 - [x] Validação de entrada (zod) em todas as rotas; rate limit no login
 - [x] Testes de controle de acesso (cliente não acessa dados de outro, prestador não avalia, etc.)
-- [ ] Cobertura ≥ 70% nas regras de negócio (busca, ranking, auth)
+- [x] Cobertura ≥ 70% nas regras de negócio (busca, ranking, auth) — hoje 91% linhas / 80% branches; `npm run coverage` falha abaixo de 70%
 
 ## Fase 8 — Deploy
 - [ ] Backend no Render (free) com env vars; CORS restrito ao domínio do front
