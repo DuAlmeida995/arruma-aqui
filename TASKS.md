@@ -28,7 +28,8 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] `backend/config/ranking.json` com pesos; score normalizado (distância, nota bayesiana com prior neutro, nº avaliações, disponibilidade, tempo de resposta, contatos bem-sucedidos)
 - [x] Resposta inclui "por que recomendado" (ranking explicável) e a UI mostra isso no card
 - [x] `docs/cenarios.json` (elétrica, hidráulica, pintura, montagem, reparos…) + script `npm run eval` que compara ranking vs busca simples e imprime % de cenários adequados (meta ≥ 80%)
-- [ ] Ranking ≥ 80% de forma robusta: ampliar cenários e avaliar em várias sementes do seed (hoje oscila 70–90% vs 20–50% da busca simples — ver `docs/ranking-log.md`); revisar critério de "adequado" com a equipe
+- [x] Avaliação robusta: 96 cenários gerados × 20 bases (`npm run eval:robusto`) com linhas de base — ranking ~74% vs busca simples ~13%
+- [ ] (BLOQUEADO: decisão da equipe — ver BLOCKED.md) Escolher critério de "adequado" que considere distância e reajustar pesos para ≥ 80%
 
 ## Fase 5 — Fluxo principal (Ativ. 5)
 - [ ] Cliente cria solicitação (categoria, descrição, quando) → vê lista recomendada

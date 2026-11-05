@@ -10,7 +10,8 @@
     "test": "vitest run",
     "db:migrate": "node db/migrate.js",
     "db:seed": "node db/seed/index.js",
-    "eval": "node scripts/eval.js"
+    "eval": "node scripts/eval.js",
+    "eval:robusto": "node scripts/eval.js --robusto"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -73,16 +73,66 @@ function evaluate(data = buildSeed(), spec = scenarios) {
     const t0 = process.hrtime.bigint();
     const rec = recommend(cands, sc);
     const ms = Number(process.hrtime.bigint() - t0) / 1e6;
-    return { id: sc.id, viavel: k > 0, adequados: achievable, simples: judge(simpleSearch(cands, sc)), ranking: judge(rec), candidatos: rec.length, ms };
+    // Linha de base "só nota": mesmos filtros, ordena só pela nota bayesiana (ignora distância).
+    // Serve para mostrar o que o critério de "adequado" está premiando.
+    const byRating = [...rec].sort(
+      (a, b) => bayesianRating(b.ratingAvg, b.ratingCount, cfg.priors) - bayesianRating(a.ratingAvg, a.ratingCount, cfg.priors) || a.id - b.id
+    );
+    return {
+      id: sc.id,
+      viavel: k > 0,
+      adequados: achievable,
+      simples: judge(simpleSearch(cands, sc)),
+      ranking: judge(rec),
+      soNota: judge(byRating),
+      candidatos: rec.length,
+      ms,
+    };
   });
   const viable = rows.filter((r) => r.viavel);
   const pct = (key) => Math.round((100 * viable.filter((r) => r[key]).length) / viable.length);
-  return { rows, simples: pct("simples"), ranking: pct("ranking"), pesos: cfg.version };
+  return { rows, simples: pct("simples"), ranking: pct("ranking"), soNota: pct("soNota"), pesos: cfg.version };
 }
 
-module.exports = { evaluate, candidatesFrom, simpleSearch, recommend };
+// Cenários gerados: cada categoria × cada bairro (exceto Parelheiros), dias da semana alternados.
+function generateScenarios({ raioKm = 15 } = {}) {
+  const { bairros } = require("../db/seed/data");
+  const cats = buildSeed().categories.map((c) => c.id);
+  const list = [];
+  let i = 0;
+  for (const categoria of cats) {
+    for (const bairro of Object.keys(bairros).filter((b) => b !== "Parelheiros")) {
+      list.push({ id: `${categoria}-${bairro}`, categoria, bairro, diaSemana: 1 + (i++ % 6), raioKm });
+    }
+  }
+  return { ...scenarios, cenarios: list };
+}
 
-if (require.main === module) {
+// Avaliação robusta: cenários gerados em várias bases fictícias (sementes diferentes)
+function evaluateRobust({ seeds = Array.from({ length: 20 }, (_, k) => k + 1), spec = generateScenarios() } = {}) {
+  const runs = seeds.map((seed) => evaluate(buildSeed({ seed }), spec));
+  const stat = (key) => {
+    const v = runs.map((r) => r[key]);
+    return { media: Math.round((10 * v.reduce((a, b) => a + b, 0)) / v.length) / 10, min: Math.min(...v), max: Math.max(...v) };
+  };
+  return {
+    bases: seeds.length,
+    cenarios: spec.cenarios.length,
+    simples: stat("simples"),
+    ranking: stat("ranking"),
+    soNota: stat("soNota"),
+    pesos: cfg.version,
+  };
+}
+
+module.exports = { evaluate, evaluateRobust, generateScenarios, candidatesFrom, simpleSearch, recommend };
+
+if (require.main === module && process.argv.includes("--robusto")) {
+  const out = evaluateRobust();
+  console.log(`Pesos v${out.pesos} — ${out.cenarios} cenários × ${out.bases} bases fictícias`);
+  console.table({ "busca simples": out.simples, ranking: out.ranking, "só nota (referência)": out.soNota });
+  process.exitCode = out.ranking.media >= 80 ? 0 : 1;
+} else if (require.main === module) {
   const out = evaluate();
   console.table(out.rows.map((r) => ({ cenario: r.id, simples: r.simples ? "ok" : "—", ranking: r.ranking ? "ok" : "—", adequados: r.adequados, candidatos: r.candidatos, ms: r.ms.toFixed(2) })));
   console.log(`Pesos v${out.pesos} — adequados: busca simples ${out.simples}% | ranking ${out.ranking}% (meta ≥ 80%)`);

@@ -41,3 +41,19 @@ Também: `ratingFloor = 3` — a nota passa a ser normalizada como `(nota_bayesi
 
 ## Observação — sensibilidade à base fictícia
 Ao corrigir o gerador do seed (gênero das profissões e descrições repetidas), a sequência aleatória mudou e, **com os mesmos pesos v2**, o resultado foi de 70% → **90%** (busca simples 20% → 50%). Ou seja: com ~10 cenários viáveis, cada cenário vale 10 pontos e o número oscila muito com a base. O ganho do ranking sobre a busca simples se manteve (+40 a +50 pontos), mas **não dá para afirmar que a meta de 80% está garantida** sem mais cenários e, idealmente, avaliar em várias sementes da base.
+
+## Avaliação robusta (`npm run eval:robusto`) — pesos v2 mantidos
+Para não depender de 10 cenários e de uma única base, a avaliação agora roda **96 cenários gerados** (8 categorias × 12 bairros, dias alternados) em **20 bases fictícias** (sementes 1–20):
+
+| Ordenação | Média | Mín | Máx |
+|---|---|---|---|
+| Busca simples (só distância) | 13% | 7% | 21% |
+| **Ranking v2** | **73,8%** | 57% | 89% |
+| Só nota (referência) | 100% | 100% | 100% |
+
+**Achado importante:** ordenar *só pela nota* atinge 100%. Isso mostra que o critério atual de "adequado" (filtros + nota bayesiana ≥ 3,8) **não leva a distância em conta** dentro do raio. Testamos pesos com mais peso na nota (ajustando nas bases 1–10 e validando nas 11–20): chegam a ~93–94% nas duas metades, mas só porque se aproximam de "ordenar por nota", ou seja, abandonam a parte geo-consciente que é a proposta do projeto. **Por isso os pesos v2 foram mantidos** e a meta de 80% fica pendente da decisão do critério pela equipe (ver `BLOCKED.md`).
+
+Sugestões de critério para a equipe escolher:
+1. **Nota + proximidade relativa:** adequado = filtros + nota ≥ 3,8 + distância no máximo X km acima do adequado mais próximo (ex.: X = 3).
+2. **Comparação par a par:** o ranking é melhor que a busca simples quando, para os mesmos candidatos, os top-3 têm nota média maior *sem* aumentar a distância média em mais de Y km.
+3. **Julgamento humano:** a equipe classifica os top-3 de uma amostra de cenários como adequado/não adequado (mais próximo do que o doc descreve na Atividade 4).

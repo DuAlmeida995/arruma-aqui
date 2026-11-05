@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { evaluate } from "../scripts/eval.js";
+import { evaluate, evaluateRobust, generateScenarios } from "../scripts/eval.js";
 
 describe("avaliação offline do ranking", () => {
   const out = evaluate();
@@ -11,5 +11,18 @@ describe("avaliação offline do ranking", () => {
 
   it("ranking não fica abaixo da busca simples", () => {
     expect(out.ranking).toBeGreaterThanOrEqual(out.simples);
+  });
+});
+
+describe("avaliação robusta", () => {
+  it("gera um cenário por categoria × bairro", () => {
+    expect(generateScenarios().cenarios).toHaveLength(8 * 12);
+  });
+
+  it("agrega várias bases e o ranking supera a busca simples", () => {
+    const out = evaluateRobust({ seeds: [1, 2] });
+    expect(out.bases).toBe(2);
+    expect(out.ranking.media).toBeGreaterThan(out.simples.media);
+    expect(out.ranking.min).toBeLessThanOrEqual(out.ranking.max);
   });
 });
