@@ -86,6 +86,37 @@ describe.skipIf(!dbReady)("contato direto", () => {
     expect(res.body.whatsapp).toBe("11 98888-7777");
   });
 
+  it("não dá para avaliar antes de marcar o serviço como realizado", async () => {
+    const conv = await as(client.token).get(`/api/conversations/${convId}`);
+    expect(conv.body.service).toEqual({ done: false, canMarkDone: true });
+    const res = await as(client.token).post(`/api/conversations/${convId}/review`, { stars: 5, text: "Ótimo" });
+    expect(res.status).toBe(409);
+  });
+
+  it("prestador marca o serviço como realizado (idempotente)", async () => {
+    const a = await as(provider.token).post(`/api/conversations/${convId}/service`, {});
+    const b = await as(provider.token).post(`/api/conversations/${convId}/service`, {});
+    expect(a.status).toBe(200);
+    expect(b.body.service).toMatchObject({ done: true, canReview: false, review: null });
+    const { rows } = await db.query("select count(*) from services where contact_id = $1", [convId]);
+    expect(Number(rows[0].count)).toBe(1);
+  });
+
+  it("prestador não avalia; nota fora de 1–5 é recusada", async () => {
+    expect((await as(provider.token).post(`/api/conversations/${convId}/review`, { stars: 5 })).status).toBe(403);
+    expect((await as(client.token).post(`/api/conversations/${convId}/review`, { stars: 6 })).status).toBe(400);
+  });
+
+  it("cliente avalia uma vez e a média do prestador é atualizada", async () => {
+    const res = await as(client.token).post(`/api/conversations/${convId}/review`, { stars: 4, text: "Pontual e caprichoso." });
+    expect(res.status).toBe(201);
+    expect(res.body.service).toMatchObject({ done: true, canReview: false, review: { stars: 4, text: "Pontual e caprichoso." } });
+    expect((await as(client.token).post(`/api/conversations/${convId}/review`, { stars: 5 })).status).toBe(409);
+    const pro = await as(client.token).get(`/api/professionals/${provider.id}`);
+    expect(pro.body).toMatchObject({ rating: 4, reviews: 1 });
+    expect(pro.body.reviewsList[0]).toMatchObject({ stars: 4, text: "Pontual e caprichoso." });
+  });
+
   it("prestador não inicia conversa; mensagem vazia e prestador inexistente dão erro", async () => {
     expect((await as(provider.token).post("/api/conversations", { providerId: provider.id, text: "oi" })).status).toBe(403);
     expect((await as(client.token).post("/api/conversations", { providerId: provider.id, text: "  " })).status).toBe(400);

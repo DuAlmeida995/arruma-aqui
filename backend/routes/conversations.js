@@ -3,6 +3,8 @@ const repo = require("../repositories/conversations");
 const { currentUser } = require("../middleware/currentUser");
 const { chatTime } = require("../services/format");
 const db = require("../db");
+const services = require("../repositories/services");
+const { z } = require("zod");
 
 const router = express.Router();
 router.use(currentUser);
@@ -63,11 +65,58 @@ router.get("/:id", async (req, res, next) => {
     if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
     const msgs = await repo.messages(conv.id);
     const last = msgs[msgs.length - 1];
+    const svc = await services.forContact(conv.id);
     res.json({
       ...header(conv, req.me),
       time: chatTime(last ? last.created_at : conv.created_at),
       messages: msgs.map((m) => ({ from: Number(m.sender_id) === req.me.id ? "me" : "them", text: m.text })),
+      service: serviceView(svc, conv, req.me),
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+function serviceView(svc, conv, me) {
+  const iAmClient = Number(conv.client_id) === me.id;
+  if (!svc) return { done: false, canMarkDone: true };
+  return {
+    done: true,
+    completedAt: svc.completed_at,
+    review: svc.stars != null ? { stars: svc.stars, text: svc.review_text } : null,
+    canReview: iAmClient && svc.stars == null,
+  };
+}
+
+// POST /api/conversations/:id/service — qualquer um dos dois marca o serviço como realizado
+router.post("/:id/service", async (req, res, next) => {
+  try {
+    const conv = await repo.findForUser(Number(req.params.id), req.me.id);
+    if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
+    const svc = await services.markDone(conv);
+    res.json({ service: serviceView(svc, conv, req.me) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+const reviewSchema = z.object({
+  stars: z.coerce.number().int().min(1, "Escolha de 1 a 5 estrelas.").max(5, "Escolha de 1 a 5 estrelas."),
+  text: z.string().trim().max(600, "O comentário pode ter no máximo 600 caracteres.").default(""),
+});
+
+// POST /api/conversations/:id/review { stars, text } — só o cliente, depois do serviço realizado
+router.post("/:id/review", async (req, res, next) => {
+  try {
+    const conv = await repo.findForUser(Number(req.params.id), req.me.id);
+    if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
+    if (Number(conv.client_id) !== req.me.id) return res.status(403).json({ error: "Só o cliente avalia o serviço." });
+    const parsed = reviewSchema.safeParse(req.body || {});
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+    const out = await services.review(conv, parsed.data);
+    if (out.error === "not_done") return res.status(409).json({ error: "Marque o serviço como realizado antes de avaliar." });
+    if (out.error === "already") return res.status(409).json({ error: "Você já avaliou este serviço." });
+    res.status(201).json({ service: serviceView(out.service, conv, req.me) });
   } catch (err) {
     next(err);
   }

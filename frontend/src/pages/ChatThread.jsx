@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import Avatar from "../components/Avatar.jsx";
+import ServicePanel from "../components/ServicePanel.jsx";
 import { api } from "../api.js";
 
 export default function ChatThread() {
@@ -110,6 +111,15 @@ export default function ChatThread() {
           </div>
         </button>
       </div>
+
+      {!isNew && (
+        <ServicePanel
+          convId={id}
+          service={conv.service}
+          otherName={conv.name}
+          onChange={(service) => setConv((c) => ({ ...c, service }))}
+        />
+      )}
 
       <div ref={listRef} className="flex-1 overflow-y-auto px-4 pt-5 pb-4 flex flex-col gap-2">
         <div className="self-center text-[11.5px] font-bold text-inksoft bg-white rounded-full px-3 py-1 shadow-card mb-2">
