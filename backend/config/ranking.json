@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "weights": {
+    "distance": 0.30,
+    "rating": 0.30,
+    "reviewCount": 0.10,
+    "availability": 0.10,
+    "responseTime": 0.10,
+    "successRate": 0.10
+  },
+  "priors": {
+    "ratingMean": 3.5,
+    "ratingStrength": 5,
+    "successRate": 0.5,
+    "successStrength": 3
+  },
+  "reviewCountHalfSaturation": 10,
+  "responseTimeHalfMinutes": 60
+}

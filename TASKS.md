@@ -25,7 +25,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [ ] Testes: exclui fora da categoria/área; distância correta; resposta < 1s
 
 ## Fase 4 — Recomendação (Ativ. 4)
-- [ ] `backend/config/ranking.json` com pesos; score normalizado (distância, nota bayesiana com prior neutro, nº avaliações, disponibilidade, tempo de resposta, contatos bem-sucedidos)
+- [x] `backend/config/ranking.json` com pesos; score normalizado (distância, nota bayesiana com prior neutro, nº avaliações, disponibilidade, tempo de resposta, contatos bem-sucedidos)
 - [ ] Resposta inclui "por que recomendado" (ranking explicável) e a UI mostra isso no card
 - [ ] `docs/cenarios.json` (elétrica, hidráulica, pintura, montagem, reparos…) + script `npm run eval` que compara ranking vs busca simples e imprime % de cenários adequados (meta ≥ 80%)
 
