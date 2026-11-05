@@ -10,7 +10,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 1 — Banco (Ativ. 2)
 - [x] Migration: extensão PostGIS; tabelas `users`, `provider_profiles` (com `geography(Point)` e `radius_km`), `categories`, `provider_categories`, `availability`, `requests`, `contacts`, `services`, `reviews`, `events`; FKs e índices (GIST na localização)
 - [x] Script `npm run db:migrate` que aplica migrations em ordem
-- [ ] Seed fictício: ~60 prestadores em SP com casos-limite (sem avaliação, região com poucos, notas empatadas, fora da área); `npm run db:seed`
+- [x] Seed fictício: ~60 prestadores em SP com casos-limite (sem avaliação, região com poucos, notas empatadas, fora da área); `npm run db:seed`
 - [ ] Trocar `mockData.js` pelas consultas ao banco mantendo os endpoints atuais (front continua funcionando)
 
 ## Fase 2 — Contas (Ativ. 5, 7)
