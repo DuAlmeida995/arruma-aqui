@@ -27,7 +27,7 @@ export default function Home() {
     setLoading(true);
     if (activeCat !== null) setAnimateCards(false);
     api
-      .getProfessionals({ cat: activeCat, sort: "rating" })
+      .getProfessionals({ cat: activeCat, sort: "relevance" })
       .then((data) => setPros(data.results.slice(0, 5)))
       .finally(() => setLoading(false));
   }, [activeCat]);
@@ -165,8 +165,8 @@ export default function Home() {
       <section className="pt-8">
         <div className="flex items-end justify-between px-5 mb-3.5">
           <div>
-            <h2 className="section-title">Bem avaliados perto de você</h2>
-            <div className="text-[13px] text-inksoft font-medium mt-0.5">Selecionados por proximidade e nota</div>
+            <h2 className="section-title">Recomendados para você</h2>
+            <div className="text-[13px] text-inksoft font-medium mt-0.5">Pela distância, avaliações e disponibilidade</div>
           </div>
           <button
             className="pressable flex-none text-[13px] font-bold text-primary-dark flex items-center gap-0.5"

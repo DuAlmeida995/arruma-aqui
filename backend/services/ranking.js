@@ -37,7 +37,7 @@ function factors(c, ctx, cfg) {
 function explain(c, f, ctx) {
   const reasons = [];
   if (c.distanceKm != null && c.distanceKm <= 3) reasons.push(`Perto de você (${formatKm(c.distanceKm)})`);
-  if ((c.ratingCount || 0) >= 5 && c.ratingAvg >= 4.5) reasons.push(`Muito bem avaliado (${c.ratingAvg.toFixed(1)} em ${c.ratingCount} avaliações)`);
+  if ((c.ratingCount || 0) >= 5 && c.ratingAvg >= 4.5) reasons.push(`Nota ${c.ratingAvg.toFixed(1).replace(".", ",")} em ${c.ratingCount} avaliações`);
   if (!c.ratingCount) reasons.push("Novo na plataforma");
   if (ctx.weekday != null && f.availability === 1) reasons.push("Disponível no dia pedido");
   if (c.avgResponseMinutes != null && c.avgResponseMinutes <= 30) reasons.push("Costuma responder rápido");

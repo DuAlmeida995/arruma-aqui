@@ -59,7 +59,7 @@ describe("ranking", () => {
   it("explica o motivo da recomendação", () => {
     const [p] = rank([pro({ id: 1, distanceKm: 0.6, ratingAvg: 4.9, ratingCount: 30, avgResponseMinutes: 10, servicesDone: 25, contactsCount: 26 })]);
     expect(p.reasons).toEqual(
-      expect.arrayContaining(["Perto de você (menos de 1 km)", "Muito bem avaliado (4.9 em 30 avaliações)", "Costuma responder rápido"])
+      expect.arrayContaining(["Perto de você (menos de 1 km)", "Nota 4,9 em 30 avaliações", "Costuma responder rápido"])
     );
   });
 

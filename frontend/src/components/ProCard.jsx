@@ -38,6 +38,19 @@ export default function ProCard({ pro, index = 0, animate = true }) {
         </div>
       </div>
 
+      {pro.reasons?.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Por que recomendamos">
+          {pro.reasons.slice(0, 3).map((r) => (
+            <span
+              key={r}
+              className="flex items-center gap-1 bg-accent-soft text-accent-dark text-[11.5px] font-bold px-2.5 py-1 rounded-full"
+            >
+              <Icon name="check" size={12} color="#0B6D63" strokeWidth={2.6} /> {r}
+            </span>
+          ))}
+        </div>
+      )}
+
       {pro.desc && <p className="text-[13px] text-inksoft mt-3 leading-relaxed line-clamp-2">{pro.desc}</p>}
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-line">
