@@ -36,6 +36,7 @@ function toView(c) {
     exp: experience(r.experience_years),
     services: r.services || [],
     ...(c.score != null ? { score: c.score, reasons: c.reasons } : {}),
+    ...(r.outside_service_area ? { outsideServiceArea: true } : {}),
   };
 }
 

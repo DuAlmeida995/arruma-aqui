@@ -15,6 +15,7 @@ export default function Search() {
   const [maxDist, setMaxDist] = useState(null);
   const [pros, setPros] = useState([]);
   const [total, setTotal] = useState(0);
+  const [searchInfo, setSearchInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadedOnce, setLoadedOnce] = useState(false);
 
@@ -27,6 +28,7 @@ export default function Search() {
         if (cancelled) return;
         setPros(data.results);
         setTotal(data.total);
+        setSearchInfo(data.search || null);
         setLoadedOnce(true);
       })
       .finally(() => !cancelled && setLoading(false));
@@ -85,6 +87,16 @@ export default function Search() {
           "Buscando…"
         )}
       </div>
+
+      {loadedOnce && searchInfo?.expanded && (
+        <div role="status" className="mx-5 mb-3 flex gap-2.5 items-start bg-accent-soft text-accent-dark rounded-[16px] px-4 py-3 text-[13px] font-semibold leading-relaxed">
+          <Icon name="compass" size={17} color="#0B6D63" className="flex-none mt-0.5" />
+          <span>
+            Poucos profissionais perto de você, então ampliamos a busca para {searchInfo.radiusKm} km.
+            {searchInfo.outsideServiceArea && " Alguns atendem normalmente outra região: confirme no chat se eles vão até você."}
+          </span>
+        </div>
+      )}
 
       {!loadedOnce && <CardSkeleton />}
       <div className={`transition-opacity duration-200 ${stale && loadedOnce ? "opacity-50" : ""}`}>

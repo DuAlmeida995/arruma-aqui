@@ -41,7 +41,14 @@ export default function ProCard({ pro, index = 0, animate = true }) {
       {pro.desc && <p className="text-[13px] text-inksoft mt-3 leading-relaxed line-clamp-2">{pro.desc}</p>}
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-line">
-        <span className="text-[12px] font-semibold text-inksoft">{pro.bairro}</span>
+        <span className="text-[12px] font-semibold text-inksoft">
+          {pro.bairro}
+          {pro.outsideServiceArea && (
+            <span className="ml-2 bg-[#FFF6E4] text-[#9A6410] font-bold text-[11px] px-2 py-[2px] rounded-full">
+              Fora da área habitual · confirme no chat
+            </span>
+          )}
+        </span>
         <span className="flex items-center gap-1 text-[13px] font-bold text-primary-dark">
           Ver perfil <Icon name="arrowRight" size={15} />
         </span>

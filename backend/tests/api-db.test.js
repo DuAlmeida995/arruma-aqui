@@ -114,6 +114,35 @@ describe.skipIf(!dbReady)("API com banco", () => {
     expect(res.body.total).toBeLessThan(all.body.total);
   });
 
+  it("em região com muitos profissionais não amplia o raio", async () => {
+    const res = await request(app).get("/api/professionals");
+    expect(res.body.search).toEqual({ radiusKm: 15, expanded: false, outsideServiceArea: false });
+  });
+
+  it("raio escolhido pelo usuário é fixo", async () => {
+    const res = await request(app).get("/api/professionals?maxDist=1");
+    expect(res.body.search).toMatchObject({ radiusKm: 1, expanded: false });
+  });
+
+  it("em região com poucos profissionais amplia o raio e marca quem está fora da área", async () => {
+    const email = `parelheiros.${Date.now()}@exemplo.com`;
+    const reg = await supertest(app)
+      .post("/api/auth/register")
+      .send({ name: "Teste Parelheiros", email, password: "senha-forte-1", role: "client", bairro: "Parelheiros" });
+    try {
+      const res = await supertest(app).get("/api/professionals?sort=dist").set("Authorization", `Bearer ${reg.body.token}`);
+      expect(res.body.search.expanded).toBe(true);
+      expect(res.body.total).toBeGreaterThanOrEqual(2);
+      // os de Parelheiros (dentro da área) vêm primeiro; os de fora estão marcados
+      expect(res.body.results[0].bairro).toBe("Parelheiros");
+      if (res.body.search.outsideServiceArea) {
+        expect(res.body.results.some((p) => p.outsideServiceArea)).toBe(true);
+      }
+    } finally {
+      await db.query("delete from users where email = $1", [email]);
+    }
+  });
+
   it("dia da semana inválido dá 400", async () => {
     expect((await request(app).get("/api/professionals?weekday=9")).status).toBe(400);
   });

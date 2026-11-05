@@ -2,6 +2,8 @@ const express = require("express");
 const repo = require("../repositories/professionals");
 const { currentUser } = require("../middleware/currentUser");
 const { sortAndView, toCandidate, toView } = require("../services/professionalView");
+const { expandRadius } = require("../services/radiusExpansion");
+const searchCfg = require("../config/search.json");
 
 const router = express.Router();
 router.use(currentUser);
@@ -16,16 +18,25 @@ router.get("/", async (req, res, next) => {
       return res.status(400).json({ error: "Dia da semana inválido (use 0 = domingo a 6 = sábado)." });
     }
     const weekday = wd;
-    const rows = await repo.search({
-      lat: req.me.lat,
-      lng: req.me.lng,
-      q,
-      cat,
-      maxDistKm: Number.isFinite(maxDist) && maxDist > 0 ? maxDist : null,
-      weekday,
-    });
-    const results = sortAndView(rows, { sort, weekday, radiusKm: Number.isFinite(maxDist) && maxDist > 0 ? maxDist : 10 });
-    res.json({ total: results.length, results });
+    const explicitRadius = Number.isFinite(maxDist) && maxDist > 0 ? maxDist : null;
+    const base = { lat: req.me.lat, lng: req.me.lng, q, cat, weekday };
+
+    let rows;
+    let search;
+    if (explicitRadius) {
+      // raio escolhido pelo usuário: fixo, sem ampliação
+      rows = await repo.search({ ...base, maxDistKm: explicitRadius });
+      search = { radiusKm: explicitRadius, expanded: false, outsideServiceArea: false };
+    } else {
+      // raio padrão com ampliação gradual (uma consulta só, até o maior raio)
+      const maxKm = Math.max(...searchCfg.expansionStepsKm);
+      const all = await repo.search({ ...base, maxDistKm: maxKm, withinServiceArea: false });
+      const out = expandRadius(all);
+      rows = out.rows;
+      search = { radiusKm: out.radiusKm, expanded: out.expanded, outsideServiceArea: out.outsideServiceArea };
+    }
+    const results = sortAndView(rows, { sort, weekday, radiusKm: search.radiusKm });
+    res.json({ total: results.length, results, search });
   } catch (err) {
     next(err);
   }

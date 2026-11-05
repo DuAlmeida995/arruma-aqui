@@ -1,0 +1,6 @@
+{
+  "defaultRadiusKm": 15,
+  "expansionStepsKm": [15, 25, 40],
+  "minResults": 5,
+  "allowOutsideServiceArea": true
+}

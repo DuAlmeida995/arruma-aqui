@@ -4,6 +4,7 @@ const SELECT = `
   select p.user_id as id, u.name, p.role_title, p.description, p.experience_years, p.bairro, p.city,
          p.radius_km, p.active, p.whatsapp, p.avg_response_minutes,
          ST_Distance(p.location, ST_MakePoint($1, $2)::geography) / 1000 as distance_km,
+         ST_DWithin(p.location, ST_MakePoint($1, $2)::geography, p.radius_km * 1000) as in_area,
          s.rating_avg, s.rating_count, s.contacts_count, s.services_done,
          (select array_agg(distinct a.weekday) from availability a where a.provider_id = p.user_id) as weekdays,
          (select array_agg(x.category_id order by x.category_id) from provider_categories x where x.provider_id = p.user_id) as categories,
