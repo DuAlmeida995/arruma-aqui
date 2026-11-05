@@ -35,7 +35,7 @@ describe("ranking", () => {
 
   it("novato sem avaliação recebe nota neutra e não fica com score zero", () => {
     const [p] = rank([pro({ id: 1, distanceKm: 2, ratingAvg: null, ratingCount: 0, contactsCount: 0, servicesDone: 0 })]);
-    expect(p.factors.rating).toBeCloseTo((cfg.priors.ratingMean - 1) / 4, 6);
+    expect(p.factors.rating).toBeCloseTo((cfg.priors.ratingMean - cfg.ratingFloor) / (5 - cfg.ratingFloor), 6);
     expect(p.score).toBeGreaterThan(0.3);
     expect(p.reasons).toContain("Novo na plataforma");
   });

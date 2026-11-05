@@ -24,7 +24,7 @@ function factors(c, ctx, cfg) {
 
   return {
     distance: clamp01(1 - (c.distanceKm ?? radius) / radius),
-    rating: clamp01((bayes - 1) / 4),
+    rating: clamp01((bayes - (cfg.ratingFloor ?? 1)) / (5 - (cfg.ratingFloor ?? 1))),
     reviewCount: (c.ratingCount || 0) / ((c.ratingCount || 0) + cfg.reviewCountHalfSaturation),
     availability,
     responseTime:
