@@ -12,6 +12,7 @@ Os eventos são gravados pela API na tabela `events` (`user_id`, `type`, `payloa
 | `contact_started` | cliente inicia uma conversa nova | `conversationId`, `providerId`, `requestId?` |
 | `provider_replied` | primeira resposta do prestador numa conversa | `conversationId`, `minutes` (tempo até responder) |
 | `review_created` | cliente avalia um serviço | `conversationId`, `providerId`, `stars` |
+| `satisfaction_answered` | cliente responde ao questionário após avaliar o serviço | `serviceId`, `conversationId`, `score` (1–5) |
 
 ## Métricas (doc FAPESP, seções 6.1 e 6.d)
 
@@ -22,7 +23,13 @@ Os eventos são gravados pela API na tabela `events` (`user_id`, `type`, `payloa
 | Conversão do pedido | pedidos com `contact_started` ligado (`requestId`) ÷ `request_created` |
 | Taxa de resposta do prestador | `provider_replied` ÷ `contact_started` |
 | Tempo de resposta do prestador | média/mediana de `provider_replied.minutes` |
-| Satisfação | média de `review_created.stars` (e o questionário da Fase 9) |
+| Avaliação do serviço | média de `review_created.stars` |
+| Satisfação com o aplicativo | média de `satisfaction_answered.score`, com quantidade de respostas |
 | Posição do contatado | posição do `providerId` do `contact_started` no `top` do último `list_shown`: mostra se o ranking põe no topo quem o cliente escolhe |
 
 **Antes do piloto:** apague os eventos gerados durante o desenvolvimento (`delete from events;`) para começar a contagem do zero.
+
+O questionário é opcional, exclusivo do cliente da conversa, após avaliar o serviço.
+A nota fica em `services.satisfaction_score`; a atualização e o evento são atômicos.
+Envios repetidos não alteram a primeira resposta nem duplicam o evento. Esse evento
+é parte da resposta persistida e também é gravado nos testes, que removem seus dados.

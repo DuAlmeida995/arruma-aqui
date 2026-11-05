@@ -21,7 +21,7 @@ const as = (t) => ({
 async function register(role) {
   const res = await supertest(app)
     .post("/api/auth/register")
-    .send({ name: `Teste ${role}`, email: `contato.${role}.${stamp}@exemplo.com`, password: "senha-forte-1", role, bairro: "Moema" });
+    .send({ name: `Teste ${role}`, email: `contato.${role}.${stamp}.${userIds.length}@exemplo.com`, password: "senha-forte-1", role, bairro: "Moema" });
   userIds.push(res.body.user.id);
   return { id: res.body.user.id, token: res.body.token };
 }
@@ -41,7 +41,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbReady) await db.query("delete from users where id = any($1)", [userIds]);
+  if (dbReady) {
+    await db.query("delete from events where user_id = any($1)", [userIds]);
+    await db.query("delete from users where id = any($1)", [userIds]);
+  }
 });
 
 describe.skipIf(!dbReady)("contato direto", () => {
@@ -89,6 +92,7 @@ describe.skipIf(!dbReady)("contato direto", () => {
   it("não dá para avaliar antes de marcar o serviço como realizado", async () => {
     const conv = await as(client.token).get(`/api/conversations/${convId}`);
     expect(conv.body.service).toEqual({ done: false, canMarkDone: true });
+    expect((await as(client.token).post(`/api/conversations/${convId}/satisfaction`, { score: 5 })).status).toBe(409);
     const res = await as(client.token).post(`/api/conversations/${convId}/review`, { stars: 5, text: "Ótimo" });
     expect(res.status).toBe(409);
   });
@@ -100,6 +104,7 @@ describe.skipIf(!dbReady)("contato direto", () => {
     expect(b.body.service).toMatchObject({ done: true, canReview: false, review: null });
     const { rows } = await db.query("select count(*) from services where contact_id = $1", [convId]);
     expect(Number(rows[0].count)).toBe(1);
+    expect((await as(client.token).post(`/api/conversations/${convId}/satisfaction`, { score: 5 })).status).toBe(409);
   });
 
   it("prestador não avalia; nota fora de 1–5 é recusada", async () => {
@@ -115,6 +120,32 @@ describe.skipIf(!dbReady)("contato direto", () => {
     const pro = await as(client.token).get(`/api/professionals/${provider.id}`);
     expect(pro.body).toMatchObject({ rating: 4, reviews: 1 });
     expect(pro.body.reviewsList[0]).toMatchObject({ stars: 4, text: "Pontual e caprichoso." });
+  });
+
+  it("questionário é do cliente, aceita notas inteiras e não duplica respostas", async () => {
+    const endpoint = `/api/conversations/${convId}/satisfaction`;
+    expect((await as(provider.token).post(endpoint, { score: 5 })).status).toBe(403);
+    for (const score of [0, 6, 1.5, "5", null]) {
+      expect((await as(client.token).post(endpoint, { score })).status).toBe(400);
+    }
+    const stranger = await register("client");
+    expect((await as(stranger.token).post(endpoint, { score: 5 })).status).toBe(404);
+    const before = await as(client.token).get(`/api/conversations/${convId}`);
+    expect(before.body.service.canAnswerSatisfaction).toBe(true);
+    const results = await Promise.all([as(client.token).post(endpoint, { score: 3 }), as(client.token).post(endpoint, { score: 3 })]);
+    for (const res of results) {
+      expect(res.status).toBe(200);
+      expect(res.body.service).toMatchObject({ satisfactionScore: 3, canAnswerSatisfaction: false });
+    }
+    const repeated = await as(client.token).post(endpoint, { score: 5 });
+    expect(repeated.body.service.satisfactionScore).toBe(3);
+    const fetched = await as(client.token).get(`/api/conversations/${convId}`);
+    expect(fetched.body.service.satisfactionScore).toBe(3);
+    const pro = await as(provider.token).get(`/api/conversations/${convId}`);
+    expect(pro.body.service).not.toHaveProperty("satisfactionScore");
+    const { rows } = await db.query("select payload from events where user_id = $1 and type = 'satisfaction_answered'", [client.id]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].payload.score).toBe(3);
   });
 
   it("prestador não inicia conversa; mensagem vazia e prestador inexistente dão erro", async () => {

@@ -40,6 +40,7 @@ beforeAll(async () => {
   await ev(a, "contact_started", { providerId: 102, requestId: 7, conversationId: 1 }, 40);
   await ev(a, "provider_replied", { conversationId: 1, minutes: 30 }, 10);
   await ev(a, "review_created", { stars: 4 }, 5);
+  await ev(a, "satisfaction_answered", { score: 3 }, 4);
   // B: viu a lista e não contatou; criou um pedido sem contato
   await ev(b, "list_shown", { source: "search", top: [201] }, 30);
   await ev(b, "request_created", { requestId: 8 }, 20);
@@ -61,6 +62,7 @@ describe.skipIf(!dbReady)("métricas", () => {
     expect(m.providerResponseRate).toBe(1);
     expect(m.providerResponseMinutesMedian).toBe(30);
     expect(m.satisfactionMean).toBe(4);
+    expect(m.appSatisfaction).toEqual({ mean: 3, n: 1 });
     expect(m.contactedPosition).toMatchObject({ mean: 2, top3Share: 1, n: 1 });
   });
 

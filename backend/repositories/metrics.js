@@ -56,6 +56,8 @@ async function compute({ from = null, to = null, userIds = null } = {}) {
   // Satisfação (avaliações feitas no app)
   const sat = await db.query(`${base} select avg((payload->>'stars')::numeric) as media from ev where type = 'review_created'`, params);
 
+  const survey = await db.query(`${base} select avg((payload->>'score')::numeric) as media, count(*) as n from ev where type = 'satisfaction_answered'`, params);
+
   // Posição, na última lista vista, do profissional que o cliente contatou
   const pos = await db.query(
     `${base}
@@ -91,6 +93,7 @@ async function compute({ from = null, to = null, userIds = null } = {}) {
     providerResponseRate: ratio(get("provider_replied").n, get("contact_started").n),
     providerResponseMinutesMedian: num(reply.rows[0].mediana),
     satisfactionMean: num(sat.rows[0].media),
+    appSatisfaction: { mean: num(survey.rows[0].media), n: Number(survey.rows[0].n) },
     contactedPosition: { mean: num(p.media), top3Share: ratio(p.top3, p.n), n: Number(p.n) },
   };
 }

@@ -71,7 +71,8 @@ export default function AdminMetrics() {
             <Metric label="Tempo até o contato" value={mins(m.timeToContactMinutes.median)} hint={`mediana · ${m.timeToContactMinutes.n} contatos`} />
             <Metric label="Taxa de contato" value={pct(m.contactRate)} hint="usuários que contataram ÷ que viram lista" />
             <Metric label="Conversão do pedido" value={pct(m.requestConversion)} hint="pedidos que viraram contato" />
-            <Metric label="Satisfação" value={m.satisfactionMean == null ? "—" : `${dec(m.satisfactionMean)} ★`} hint={`${m.totals.reviews} avaliações`} />
+            <Metric label="Avaliação do serviço" value={m.satisfactionMean == null ? "—" : `${dec(m.satisfactionMean)} ★`} hint={`${m.totals.reviews} avaliações`} />
+            <Metric label="Satisfação com o app" value={m.appSatisfaction.mean == null ? "—" : `${dec(m.appSatisfaction.mean)} / 5`} hint={`${m.appSatisfaction.n} respostas ao questionário`} />
             <Metric label="Resposta do prestador" value={pct(m.providerResponseRate)} hint={`mediana ${mins(m.providerResponseMinutesMedian)}`} />
             <Metric
               label="Escolhido no top 3"

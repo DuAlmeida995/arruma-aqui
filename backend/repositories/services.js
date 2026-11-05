@@ -3,7 +3,7 @@ const db = require("../db");
 
 async function forContact(contactId) {
   const { rows } = await db.query(
-    `select s.id, s.status, s.completed_at, r.stars, r.text as review_text
+    `select s.id, s.status, s.completed_at, s.satisfaction_score, r.stars, r.text as review_text
        from services s left join reviews r on r.service_id = s.id
       where s.contact_id = $1`,
     [contactId]
@@ -34,4 +34,24 @@ async function review(contact, { stars, text }) {
   return { service: await forContact(contact.id) };
 }
 
-module.exports = { forContact, markDone, review };
+// Atualização e evento na mesma instrução: uma resposta por serviço, mesmo
+// com dois envios simultâneos. Uma repetição retorna a nota já registrada.
+async function answerSatisfaction(contact, score) {
+  const s = await forContact(contact.id);
+  if (!s || s.stars == null) return { error: "not_reviewed" };
+  await db.query(
+    `with answered as (
+       update services set satisfaction_score = $2
+        where id = $1 and satisfaction_score is null
+        returning id, client_id, contact_id, satisfaction_score
+     )
+     insert into events (user_id, type, payload)
+     select client_id, 'satisfaction_answered',
+            jsonb_build_object('serviceId', id, 'conversationId', contact_id, 'score', satisfaction_score)
+       from answered`,
+    [s.id, score]
+  );
+  return { service: await forContact(contact.id) };
+}
+
+module.exports = { forContact, markDone, review, answerSatisfaction };

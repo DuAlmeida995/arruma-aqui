@@ -73,6 +73,7 @@ export const api = {
   sendMessage: (id, text) => post(`/conversations/${id}/messages`, { text }),
   markServiceDone: (id) => post(`/conversations/${id}/service`, {}),
   reviewService: (id, stars, text) => post(`/conversations/${id}/review`, { stars, text }),
+  answerSatisfaction: (id, score) => post(`/conversations/${id}/satisfaction`, { score }),
   startConversation: (providerId, text, requestId) => post("/conversations", { providerId: Number(providerId), text, requestId }),
   getUser: () => request("/user/me"),
   createRequest: (data) => post("/requests", data),

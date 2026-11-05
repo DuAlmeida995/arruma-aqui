@@ -90,6 +90,10 @@ function serviceView(svc, conv, me) {
     completedAt: svc.completed_at,
     review: svc.stars != null ? { stars: svc.stars, text: svc.review_text } : null,
     canReview: iAmClient && svc.stars == null,
+    ...(iAmClient ? {
+      satisfactionScore: svc.satisfaction_score ?? null,
+      canAnswerSatisfaction: svc.stars != null && svc.satisfaction_score == null,
+    } : {}),
   };
 }
 
@@ -123,6 +127,23 @@ router.post("/:id/review", validate({ params: idParam }), async (req, res, next)
     if (out.error === "already") return res.status(409).json({ error: "Você já avaliou este serviço." });
     events.track(req.me.id, "review_created", { conversationId: Number(conv.id), providerId: Number(conv.provider_id), stars: parsed.data.stars });
     res.status(201).json({ service: serviceView(out.service, conv, req.me) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Questionário opcional sobre o app, após a avaliação do serviço.
+router.post("/:id/satisfaction", validate({
+  params: idParam,
+  body: z.object({ score: z.number().int().min(1, "Escolha uma nota de 1 a 5.").max(5, "Escolha uma nota de 1 a 5.") }),
+}), async (req, res, next) => {
+  try {
+    const conv = await repo.findForUser(req.valid.params.id, req.me.id);
+    if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
+    if (Number(conv.client_id) !== req.me.id) return res.status(403).json({ error: "Só o cliente responde este questionário." });
+    const out = await services.answerSatisfaction(conv, req.valid.body.score);
+    if (out.error) return res.status(409).json({ error: "Conclua e avalie o serviço antes de responder." });
+    res.json({ service: serviceView(out.service, conv, req.me) });
   } catch (err) {
     next(err);
   }

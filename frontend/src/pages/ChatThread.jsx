@@ -114,6 +114,7 @@ export default function ChatThread() {
 
       {!isNew && (
         <ServicePanel
+          key={id}
           convId={id}
           service={conv.service}
           otherName={conv.name}
