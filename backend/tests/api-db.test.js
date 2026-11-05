@@ -88,6 +88,36 @@ describe.skipIf(!dbReady)("API com banco", () => {
     });
   });
 
+  it("só mostra prestadores cuja área de atendimento cobre o cliente", async () => {
+    const { rows } = await db.query(
+      `select p.user_id, p.radius_km,
+              ST_Distance(p.location, u.location) / 1000 as km
+         from provider_profiles p, users u
+        where u.email = 'cliente@exemplo.com' and p.active`
+    );
+    const res = await request(app).get("/api/professionals");
+    const ids = new Set(res.body.results.map((p) => p.id));
+    for (const r of rows) {
+      const inside = Number(r.km) <= Number(r.radius_km);
+      expect(ids.has(Number(r.user_id))).toBe(inside);
+    }
+    expect(rows.some((r) => Number(r.km) > Number(r.radius_km))).toBe(true); // o caso existe na base
+  });
+
+  it("filtra por disponibilidade no dia da semana", async () => {
+    const res = await request(app).get("/api/professionals?weekday=6");
+    const { rows } = await db.query("select distinct provider_id from availability where weekday = 6");
+    const saturday = new Set(rows.map((r) => Number(r.provider_id)));
+    res.body.results.forEach((p) => expect(saturday.has(p.id)).toBe(true));
+    const all = await request(app).get("/api/professionals");
+    expect(res.body.total).toBeGreaterThan(0);
+    expect(res.body.total).toBeLessThan(all.body.total);
+  });
+
+  it("dia da semana inválido dá 400", async () => {
+    expect((await request(app).get("/api/professionals?weekday=9")).status).toBe(400);
+  });
+
   it("busca por texto encontra pela profissão", async () => {
     const res = await request(app).get("/api/professionals?q=eletricista");
     expect(res.body.total).toBeGreaterThan(0);

@@ -10,7 +10,8 @@ export default function Search() {
   const location = useLocation();
   const [query, setQuery] = useState(location.state?.query || "");
   const debouncedQuery = useDebounced(query, 300);
-  const [sort, setSort] = useState("rating");
+  const [sort, setSort] = useState("relevance");
+  const [today, setToday] = useState(false);
   const [maxDist, setMaxDist] = useState(null);
   const [pros, setPros] = useState([]);
   const [total, setTotal] = useState(0);
@@ -21,7 +22,7 @@ export default function Search() {
     let cancelled = false;
     setLoading(true);
     api
-      .getProfessionals({ q: debouncedQuery, sort, maxDist })
+      .getProfessionals({ q: debouncedQuery, sort, maxDist, weekday: today ? new Date().getDay() : null })
       .then((data) => {
         if (cancelled) return;
         setPros(data.results);
@@ -32,7 +33,7 @@ export default function Search() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, sort, maxDist]);
+  }, [debouncedQuery, sort, maxDist, today]);
 
   const stale = loading || query !== debouncedQuery;
 
@@ -58,6 +59,9 @@ export default function Search() {
       </div>
 
       <div className="flex gap-2 px-5 pt-3.5 pb-1 overflow-x-auto">
+        <Chip active={sort === "relevance"} onClick={() => setSort("relevance")} icon="sparkle">
+          Recomendados
+        </Chip>
         <Chip active={sort === "rating"} onClick={() => setSort("rating")} icon="star">
           Melhor avaliação
         </Chip>
@@ -66,6 +70,9 @@ export default function Search() {
         </Chip>
         <Chip active={maxDist === 3} onClick={() => setMaxDist(maxDist === 3 ? null : 3)} icon="compass">
           Até 3 km
+        </Chip>
+        <Chip active={today} onClick={() => setToday((t) => !t)} icon="calendar">
+          Disponível hoje
         </Chip>
       </div>
 

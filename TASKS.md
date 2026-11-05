@@ -20,7 +20,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] Editar perfil (cliente e prestador); excluir conta (LGPD)
 
 ## Fase 3 — Busca geográfica (Ativ. 3)
-- [ ] Busca com `ST_DWithin` por categoria + ativo + disponibilidade; distância arredondada na resposta
+- [x] Busca com `ST_DWithin` por categoria + ativo + disponibilidade; distância arredondada na resposta
 - [ ] Ampliação gradual do raio quando houver menos de N candidatos
 - [ ] Testes: exclui fora da categoria/área; distância correta; resposta < 1s
 

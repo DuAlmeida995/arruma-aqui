@@ -11,13 +11,18 @@ router.get("/", async (req, res, next) => {
   try {
     const { q, cat, sort } = req.query;
     const maxDist = parseFloat(req.query.maxDist);
-    const weekday = req.query.weekday != null && req.query.weekday !== "" ? Number(req.query.weekday) : undefined;
+    const wd = req.query.weekday != null && req.query.weekday !== "" ? Number(req.query.weekday) : undefined;
+    if (wd !== undefined && !(Number.isInteger(wd) && wd >= 0 && wd <= 6)) {
+      return res.status(400).json({ error: "Dia da semana inválido (use 0 = domingo a 6 = sábado)." });
+    }
+    const weekday = wd;
     const rows = await repo.search({
       lat: req.me.lat,
       lng: req.me.lng,
       q,
       cat,
       maxDistKm: Number.isFinite(maxDist) && maxDist > 0 ? maxDist : null,
+      weekday,
     });
     const results = sortAndView(rows, { sort, weekday, radiusKm: Number.isFinite(maxDist) && maxDist > 0 ? maxDist : 10 });
     res.json({ total: results.length, results });

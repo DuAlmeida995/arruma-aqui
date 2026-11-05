@@ -12,8 +12,10 @@ const SELECT = `
     join users u on u.id = p.user_id and u.deleted_at is null
     join provider_stats s on s.provider_id = p.user_id`;
 
-// Candidatos com distância (km) calculada pelo PostGIS a partir do ponto (lat, lng) do cliente
-async function search({ lat, lng, q, cat, maxDistKm, includeInactive = false }) {
+// Candidatos com distância (km) calculada pelo PostGIS a partir do ponto (lat, lng) do cliente.
+// Filtros eliminatórios (Atividade 3): ativo, categoria, área de atendimento do prestador
+// (cliente dentro do raio dele), disponibilidade no dia pedido e raio máximo da busca.
+async function search({ lat, lng, q, cat, maxDistKm, weekday, withinServiceArea = true, includeInactive = false }) {
   const params = [lng, lat];
   const where = [];
   const add = (v) => {
@@ -35,6 +37,13 @@ async function search({ lat, lng, q, cat, maxDistKm, includeInactive = false }) 
   if (maxDistKm) {
     const m = add(maxDistKm * 1000);
     where.push(`ST_DWithin(p.location, ST_MakePoint($1, $2)::geography, ${m})`);
+  }
+  if (withinServiceArea) {
+    where.push("ST_DWithin(p.location, ST_MakePoint($1, $2)::geography, p.radius_km * 1000)");
+  }
+  if (Number.isInteger(weekday)) {
+    const d = add(weekday);
+    where.push(`exists (select 1 from availability a where a.provider_id = p.user_id and a.weekday = ${d})`);
   }
 
   const { rows } = await db.query(`${SELECT} ${where.length ? "where " + where.join(" and ") : ""}`, params);
