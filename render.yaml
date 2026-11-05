@@ -1,0 +1,24 @@
+# Blueprint do Render (plano gratuito): Dashboard → New → Blueprint → escolha este repositório.
+services:
+  - type: web
+    name: arruma-aqui-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL # connection string do Supabase (Session pooler) — preencher no painel
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: CORS_ORIGIN # endereço do front na Vercel, ex.: https://arruma-aqui.vercel.app
+        sync: false
+      - key: TRUST_PROXY
+        value: "1"

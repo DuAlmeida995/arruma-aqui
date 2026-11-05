@@ -47,9 +47,10 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] Cobertura ≥ 70% nas regras de negócio (busca, ranking, auth) — hoje 91% linhas / 80% branches; `npm run coverage` falha abaixo de 70%
 
 ## Fase 8 — Deploy
-- [ ] Backend no Render (free) com env vars; CORS restrito ao domínio do front
-- [ ] Frontend na Vercel com `VITE_API_URL`; rota SPA funcionando
-- [ ] Smoke test no link público: cadastro → busca → contato → avaliação
+- [x] Configuração pronta: `render.yaml` (Blueprint), `frontend/vercel.json`, CORS restrito por `CORS_ORIGIN`, `TRUST_PROXY`, guia `docs/DEPLOY.md`
+- [ ] (BLOQUEADO: alguém do grupo cria a conta — ver BLOCKED.md) Backend no Render com env vars
+- [ ] (BLOQUEADO: idem) Frontend na Vercel com `VITE_API_URL`
+- [ ] Smoke test no link público: cadastro → busca → contato → avaliação (depende dos dois acima)
 
 ## Fase 9 — Acabamento (Ativ. 6)
 - [ ] Questionário de satisfação (1–5) dentro do app ao fim do fluxo

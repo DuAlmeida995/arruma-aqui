@@ -17,7 +17,17 @@ function createApp({ users = usersRepo } = {}) {
   // Atrás do proxy do Render, TRUST_PROXY=1 faz o limite de tentativas usar o IP real do cliente
   app.set("trust proxy", Number(process.env.TRUST_PROXY || 0));
   app.use(helmet());
-  app.use(cors());
+  // CORS: só o(s) endereço(s) do front em CORS_ORIGIN (separados por vírgula).
+  // Sem a variável, libera o front local de desenvolvimento.
+  const allowed = (process.env.CORS_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173")
+    .split(",")
+    .map((o) => o.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+  app.use(
+    cors({
+      origin: (origin, cb) => cb(null, !origin || allowed.includes(origin)),
+    })
+  );
   app.use(express.json({ limit: "100kb" }));
 
   // Limite de tentativas de login/cadastro por IP (contra força bruta).
