@@ -73,6 +73,43 @@ function createAuthRouter({ users }) {
     }
   });
 
+  const updateSchema = z.object({
+    name: z.string().trim().min(2, "Informe seu nome.").max(80),
+    phone: z.string().trim().max(20).optional().or(z.literal("")),
+    bairro: z.string().refine((b) => Object.hasOwn(bairros, b), "Escolha um bairro da lista."),
+  });
+
+  // PATCH /api/auth/me — editar nome, telefone e bairro
+  router.patch("/me", requireAuth, async (req, res, next) => {
+    try {
+      const parsed = updateSchema.safeParse(req.body || {});
+      if (!parsed.success) return res.status(400).json({ error: firstError(parsed) });
+      const [lat, lng] = bairros[parsed.data.bairro];
+      const user = await users.update(req.user.id, { ...parsed.data, lat, lng });
+      if (!user) return res.status(404).json({ error: "Conta não encontrada." });
+      res.json({ user: publicUser(user) });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // DELETE /api/auth/me { password } — exclusão da conta (LGPD), exige confirmar a senha
+  router.delete("/me", requireAuth, async (req, res, next) => {
+    try {
+      const user = await users.findById(req.user.id);
+      if (!user) return res.status(404).json({ error: "Conta não encontrada." });
+      const password = typeof req.body?.password === "string" ? req.body.password : "";
+      if (!(await checkPassword(password, user.password_hash))) {
+        // 403 (não 401): a sessão continua válida, só a confirmação falhou
+        return res.status(403).json({ error: "Senha incorreta. Digite sua senha para confirmar a exclusão." });
+      }
+      await users.anonymize(user.id);
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   return router;
 }
 

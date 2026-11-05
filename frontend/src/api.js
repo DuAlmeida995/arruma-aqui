@@ -57,6 +57,8 @@ export const api = {
   login: (email, password) => post("/auth/login", { email, password }),
   register: (data) => post("/auth/register", data),
   me: () => request("/auth/me"),
+  updateMe: (data) => request("/auth/me", { method: "PATCH", body: JSON.stringify(data) }),
+  deleteMe: (password) => request("/auth/me", { method: "DELETE", body: JSON.stringify({ password }) }),
   getBairros: () => request("/bairros"),
   getCategories: () => request("/categories"),
   getProfessionals: (params = {}) => {

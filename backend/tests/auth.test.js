@@ -96,6 +96,29 @@ describe("auth", () => {
     expect(res.body.error).toMatch(/expirou/);
   });
 
+  it("edita nome, telefone e bairro", async () => {
+    const { app } = setup();
+    const { body } = await request(app).post("/api/auth/register").send(valid);
+    const res = await request(app)
+      .patch("/api/auth/me")
+      .set("Authorization", `Bearer ${body.token}`)
+      .send({ name: "Novo Nome", phone: "11 90000-0000", bairro: "Lapa" });
+    expect(res.status).toBe(200);
+    expect(res.body.user).toMatchObject({ name: "Novo Nome", bairro: "Lapa" });
+    const bad = await request(app).patch("/api/auth/me").set("Authorization", `Bearer ${body.token}`).send({ name: "X", bairro: "Lapa" });
+    expect(bad.status).toBe(400);
+  });
+
+  it("exclusão exige a senha e depois impede o login", async () => {
+    const { app } = setup();
+    const { body } = await request(app).post("/api/auth/register").send(valid);
+    const auth = { Authorization: `Bearer ${body.token}` };
+    expect((await request(app).delete("/api/auth/me").set(auth).send({ password: "errada" })).status).toBe(403);
+    expect((await request(app).delete("/api/auth/me").set(auth).send({ password: valid.password })).status).toBe(200);
+    expect((await request(app).post("/api/auth/login").send({ email: valid.email, password: valid.password })).status).toBe(401);
+    expect((await request(app).get("/api/auth/me").set(auth)).status).toBe(404);
+  });
+
   it("requireRole bloqueia papel errado", async () => {
     const app = express();
     app.get("/so-prestador", requireAuth, requireRole("provider"), (req, res) => res.json({ ok: true }));

@@ -10,6 +10,7 @@ import UserProfile from "./pages/UserProfile.jsx";
 import Settings from "./pages/Settings.jsx";
 import { Login, Register } from "./pages/AuthPages.jsx";
 import ProviderProfileForm from "./pages/ProviderProfileForm.jsx";
+import AccountSettings from "./pages/AccountSettings.jsx";
 import { AuthProvider, RequireAuth } from "./auth.jsx";
 
 const protectedRoutes = [
@@ -21,6 +22,7 @@ const protectedRoutes = [
   ["/perfil", UserProfile],
   ["/configuracoes", Settings],
   ["/prestador/perfil", ProviderProfileForm],
+  ["/conta", AccountSettings],
 ];
 
 export default function App() {

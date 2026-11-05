@@ -49,6 +49,15 @@ export function AuthProvider({ children }) {
       status,
       login: async (email, password) => saveSession(await api.login(email, password)),
       register: async (data) => saveSession(await api.register(data)),
+      updateUser: async (data) => {
+        const { user } = await api.updateMe(data);
+        setUser(user);
+        return user;
+      },
+      deleteAccount: async (password) => {
+        await api.deleteMe(password);
+        logout();
+      },
       logout,
     }),
     [user, status, saveSession, logout]

@@ -17,7 +17,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] `POST /auth/register` (cliente ou prestador), `POST /auth/login`, `GET /auth/me`; bcrypt + JWT 24h; middleware de papel (validado também no Supabase)
 - [x] Telas de cadastro e login; token no front; rotas protegidas; remover usuário fixo "Mariana"
 - [x] Onboarding do prestador: categorias, bairro/CEP → coordenada aproximada, raio de atendimento, disponibilidade
-- [ ] Editar perfil (cliente e prestador); excluir conta (LGPD)
+- [x] Editar perfil (cliente e prestador); excluir conta (LGPD)
 
 ## Fase 3 — Busca geográfica (Ativ. 3)
 - [ ] Busca com `ST_DWithin` por categoria + ativo + disponibilidade; distância arredondada na resposta

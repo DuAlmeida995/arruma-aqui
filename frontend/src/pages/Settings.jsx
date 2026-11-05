@@ -31,6 +31,9 @@ export default function Settings() {
       <PageHeader title="Ajustes" />
 
       <Group label="Conta">
+        <div onClick={() => navigate("/conta")}>
+          <Row icon="user" title="Dados da conta" sub="Nome, telefone, bairro e exclusão" tint={["#E4F1FF", "#2F6FD6"]} />
+        </div>
         {user?.role === "provider" && (
           <div onClick={() => navigate("/prestador/perfil")}>
             <Row icon="wrench" title="Perfil profissional" sub="Categorias, área e horários" tint={["#FFF0EA", "#E04E22"]} />
