@@ -81,5 +81,9 @@ export const api = {
   closeRequest: (id) => post(`/requests/${id}/close`, {}),
   getProviderProfile: () => request("/provider/profile"),
   getProviderDashboard: () => request("/provider/dashboard"),
+  getMetrics: (params = {}) => {
+    const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v))).toString();
+    return request(`/admin/metrics${qs ? `?${qs}` : ""}`);
+  },
   saveProviderProfile: (data) => request("/provider/profile", { method: "PUT", body: JSON.stringify(data) }),
 };

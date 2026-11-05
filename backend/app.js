@@ -27,6 +27,7 @@ function createApp({ users = usersRepo } = {}) {
   app.use("/api/user", userRouter);
   app.use("/api/provider", require("./routes/provider"));
   app.use("/api/requests", require("./routes/requests"));
+  app.use("/api/admin", require("./routes/admin"));
 
   app.use((req, res) => {
     res.status(404).json({ error: "Rota não encontrada." });

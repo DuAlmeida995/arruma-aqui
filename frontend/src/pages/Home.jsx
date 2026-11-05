@@ -46,7 +46,7 @@ export default function Home() {
             </div>
             <div>
               <div className="font-display font-extrabold text-[19px] leading-none tracking-tight">Arruma Aqui</div>
-              {user && (
+              {user?.bairro && (
                 <div className="flex items-center gap-1 text-[12px] text-white/60 font-semibold mt-1">
                   <Icon name="mappin" size={11} /> {user.bairro}, SP
                 </div>

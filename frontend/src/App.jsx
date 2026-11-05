@@ -12,6 +12,7 @@ import { Login, Register } from "./pages/AuthPages.jsx";
 import ProviderProfileForm from "./pages/ProviderProfileForm.jsx";
 import AccountSettings from "./pages/AccountSettings.jsx";
 import { NewRequest, RequestDetail } from "./pages/Requests.jsx";
+import AdminMetrics from "./pages/AdminMetrics.jsx";
 import { AuthProvider, RequireAuth } from "./auth.jsx";
 
 const protectedRoutes = [
@@ -27,6 +28,7 @@ const protectedRoutes = [
   ["/conta", AccountSettings],
   ["/pedido/novo", NewRequest],
   ["/pedido/:id", RequestDetail],
+  ["/admin/metricas", AdminMetrics],
 ];
 
 export default function App() {

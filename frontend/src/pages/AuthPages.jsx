@@ -57,7 +57,7 @@ function SubmitButton({ busy, children }) {
 }
 
 export function Login() {
-  const { login, status } = useAuth();
+  const { login, status, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
@@ -66,8 +66,11 @@ export function Login() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (status === "authenticated") navigate(location.state?.from || "/", { replace: true });
-  }, [status, navigate, location.state]);
+    if (status !== "authenticated") return;
+    const from = location.state?.from;
+    const home = user?.role === "admin" ? "/admin/metricas" : "/";
+    navigate(from && from !== "/" ? from : home, { replace: true });
+  }, [status, user, navigate, location.state]);
 
   async function submit(e) {
     e.preventDefault();

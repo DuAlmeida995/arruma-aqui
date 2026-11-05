@@ -39,7 +39,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 
 ## Fase 6 — Métricas (Ativ. 1, 8)
 - [x] Registrar eventos: solicitação criada, lista exibida, perfil aberto, contato iniciado, resposta do prestador, avaliação (ver `docs/metricas.md`)
-- [ ] Página `/admin/metricas` (só admin): tempo até contato, taxa de contato, conversão, média de satisfação
+- [x] Página `/admin/metricas` (só admin): tempo até contato, taxa de contato, conversão, média de satisfação
 
 ## Fase 7 — Qualidade e segurança (Ativ. 7)
 - [ ] Validação de entrada (zod) em todas as rotas; rate limit no login

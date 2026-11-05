@@ -31,6 +31,11 @@ export default function Settings() {
       <PageHeader title="Ajustes" />
 
       <Group label="Conta">
+        {user?.role === "admin" && (
+          <div onClick={() => navigate("/admin/metricas")}>
+            <Row icon="sliders" title="Métricas da pesquisa" sub="Contato, conversão, satisfação" tint={["#E3F3F1", "#0B6D63"]} />
+          </div>
+        )}
         <div onClick={() => navigate("/conta")}>
           <Row icon="user" title="Dados da conta" sub="Nome, telefone, bairro e exclusão" tint={["#E4F1FF", "#2F6FD6"]} />
         </div>
