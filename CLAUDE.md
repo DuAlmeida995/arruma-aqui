@@ -12,7 +12,7 @@ Plataforma que conecta clientes a prestadores de serviços domésticos com **rec
 ## Regras do loop
 1. Leia `TASKS.md`, pegue a **primeira tarefa não marcada** e faça só ela.
 2. Antes de commitar: `npm test --prefix backend` e `npm run build --prefix frontend` passando. Teste visualmente no preview quando mexer em tela.
-3. Marque a tarefa como `[x]` no `TASKS.md`, commit pequeno em português (`feat: ...`, `fix: ...`) e `git push` na `main`. Faça `git pull --rebase` antes de pushar (colegas também commitam).
+3. Marque a tarefa como `[x]` no `TASKS.md`, commit pequeno em português (`feat: ...`, `fix: ...`) e `git push` na `main`. Faça `git pull --rebase` antes de pushar (colegas também commitam). Depois do push, rode `gh repo sync EnricoAranha/arruma-aqui` (fork usado no deploy).
 4. Se travar por algo que só o humano resolve (senha, conta, decisão de produto), escreva em `BLOCKED.md` o que precisa e **pule para a próxima tarefa independente**. Nunca invente credenciais.
 5. Nunca commitar `.env`, chaves ou dados pessoais reais. Só dados fictícios.
 6. Interface e mensagens de erro em português, explicando o problema e o que fazer.
