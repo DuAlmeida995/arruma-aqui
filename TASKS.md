@@ -22,7 +22,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 3 — Busca geográfica (Ativ. 3)
 - [x] Busca com `ST_DWithin` por categoria + ativo + disponibilidade; distância arredondada na resposta
 - [x] Ampliação gradual do raio quando houver menos de N candidatos
-- [ ] Testes: exclui fora da categoria/área; distância correta; resposta < 1s
+- [x] Testes: exclui fora da categoria/área; distância correta; resposta < 1s (p95 ≈ 330 ms com o Supabase em us-east-1)
 
 ## Fase 4 — Recomendação (Ativ. 4)
 - [x] `backend/config/ranking.json` com pesos; score normalizado (distância, nota bayesiana com prior neutro, nº avaliações, disponibilidade, tempo de resposta, contatos bem-sucedidos)
