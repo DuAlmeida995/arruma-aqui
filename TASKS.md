@@ -33,7 +33,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 
 ## Fase 5 — Fluxo principal (Ativ. 5)
 - [x] Cliente cria solicitação (categoria, descrição, quando) → vê lista recomendada
-- [ ] Contato direto: chat persistido no banco + botão WhatsApp; prestador vê e responde suas conversas
+- [x] Contato direto: chat persistido no banco + botão WhatsApp; prestador vê e responde suas conversas
 - [ ] Marcar serviço como realizado → cliente avalia (1–5 + texto); média recalculada
 - [ ] Área do prestador: minhas conversas, meus serviços, minhas avaliações
 

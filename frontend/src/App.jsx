@@ -20,6 +20,7 @@ const protectedRoutes = [
   ["/profissional/:id", Profile],
   ["/chat", ChatList],
   ["/chat/:id", ChatThread],
+  ["/chat/novo/:proId", ChatThread],
   ["/perfil", UserProfile],
   ["/configuracoes", Settings],
   ["/prestador/perfil", ProviderProfileForm],

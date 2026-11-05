@@ -5,7 +5,9 @@ import Avatar from "../components/Avatar.jsx";
 import { api } from "../api.js";
 
 export default function ChatThread() {
-  const { id } = useParams();
+  const { id, proId } = useParams(); // /chat/:id (existente) ou /chat/novo/:proId (nova)
+  const isNew = Boolean(proId);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const [conv, setConv] = useState(null);
   const [text, setText] = useState("");
@@ -15,11 +17,24 @@ export default function ChatThread() {
   const listRef = useRef(null);
 
   useEffect(() => {
-    api.getConversation(id).then((c) => {
-      setInitialCount(c.messages.length);
-      setConv(c);
-    });
-  }, [id]);
+    if (isNew) {
+      api
+        .getProfessional(proId)
+        .then((p) => {
+          setInitialCount(0);
+          setConv({ proId: p.id, otherIsProvider: true, name: p.name, role: p.role, time: "Nova conversa", messages: [] });
+        })
+        .catch((e) => setError(e.message));
+      return;
+    }
+    api
+      .getConversation(id)
+      .then((c) => {
+        setInitialCount(c.messages.length);
+        setConv(c);
+      })
+      .catch((e) => setError(e.message));
+  }, [id, proId, isNew]);
 
   useEffect(() => {
     const el = listRef.current;
@@ -33,13 +48,34 @@ export default function ChatThread() {
     const value = text.trim();
     setText("");
     setSending(true);
+    setError("");
     try {
+      if (isNew) {
+        const { id: newId } = await api.startConversation(proId, value);
+        navigate(`/chat/${newId}`, { replace: true });
+        return;
+      }
       const msg = await api.sendMessage(id, value);
       setConv((c) => ({ ...c, messages: [...c.messages, msg] }));
+    } catch (e) {
+      setText(value);
+      setError(e.message);
     } finally {
       setSending(false);
     }
   };
+
+  if (!conv && error) {
+    return (
+      <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex flex-col items-center justify-center gap-3 bg-bg px-8 text-center">
+        <div className="font-display font-bold text-[18px]">Não foi possível abrir a conversa</div>
+        <div className="text-inksoft text-[14px]">{error}</div>
+        <button className="text-primary-dark font-extrabold" onClick={() => navigate("/chat")}>
+          Voltar para as conversas
+        </button>
+      </div>
+    );
+  }
 
   if (!conv) {
     return (
@@ -59,15 +95,19 @@ export default function ChatThread() {
         >
           <Icon name="chevronLeft" size={20} />
         </button>
-        <button className="flex items-center gap-3 flex-1 min-w-0 text-left" onClick={() => navigate(`/profissional/${conv.proId}`)}>
-          <Avatar id={conv.proId} name={conv.name} size={42} radius={14} />
+        <button
+          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+          onClick={() => conv.otherIsProvider && navigate(`/profissional/${conv.proId}`)}
+          disabled={!conv.otherIsProvider}
+        >
+          <Avatar id={conv.otherId ?? conv.proId} name={conv.name} size={42} radius={14} />
           <div className="min-w-0">
             <div className="font-bold text-[15px] truncate">{conv.name}</div>
-            <div className="text-[12px] text-primary-dark font-bold">{conv.role} · ver perfil</div>
+            <div className="text-[12px] text-primary-dark font-bold">
+              {conv.role}
+              {conv.otherIsProvider && " · ver perfil"}
+            </div>
           </div>
-        </button>
-        <button className="pressable w-10 h-10 rounded-full bg-bg flex items-center justify-center flex-none" aria-label="Ligar">
-          <Icon name="phone" size={18} />
         </button>
       </div>
 
@@ -75,6 +115,11 @@ export default function ChatThread() {
         <div className="self-center text-[11.5px] font-bold text-inksoft bg-white rounded-full px-3 py-1 shadow-card mb-2">
           {conv.time}
         </div>
+        {isNew && (
+          <div className="self-center text-center text-[13px] text-inksoft font-semibold max-w-[85%] mt-6 leading-relaxed">
+            Conte o que você precisa. Preço, prazo e condições são combinados direto entre vocês — a plataforma não cobra nada.
+          </div>
+        )}
         {conv.messages.map((m, i) => {
           const mine = m.from === "me";
           return (
@@ -92,6 +137,11 @@ export default function ChatThread() {
         })}
       </div>
 
+      {error && (
+        <div role="alert" className="flex-none mx-4 mb-1 bg-danger-soft text-danger rounded-[12px] px-3.5 py-2 text-[13px] font-semibold">
+          {error}
+        </div>
+      )}
       <div className="flex-none flex items-center gap-2 px-4 pt-3 pb-[calc(0.9rem+env(safe-area-inset-bottom))] bg-bg/90 backdrop-blur-xl">
         <div className="flex-1 flex items-center bg-white rounded-full shadow-card pl-5 pr-1.5 py-1.5 focus-within:ring-2 focus-within:ring-primary/40 transition">
           <input

@@ -4,9 +4,11 @@ import Avatar from "../components/Avatar.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import Icon from "../components/Icon.jsx";
 import { api } from "../api.js";
+import { useAuth } from "../auth.jsx";
 
 export default function ChatList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [convs, setConvs] = useState(null);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function ChatList() {
             }`}
             onClick={() => navigate(`/chat/${c.id}`)}
           >
-            <Avatar id={c.proId} name={c.name} size={52} radius={17} />
+            <Avatar id={c.otherId ?? c.proId} name={c.name} size={52} radius={17} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-bold text-[15px] truncate">{c.name}</span>
@@ -49,12 +51,14 @@ export default function ChatList() {
         ))}
       </div>
 
-      <button
-        className="pressable mx-5 mt-4 w-[calc(100%-40px)] flex items-center justify-center gap-2 py-4 rounded-[18px] border-2 border-dashed border-line text-inksoft font-bold text-[14px]"
-        onClick={() => navigate("/buscar")}
-      >
-        <Icon name="search" size={17} /> Encontrar novo profissional
-      </button>
+      {user?.role === "client" && (
+        <button
+          className="pressable mx-5 mt-4 w-[calc(100%-40px)] flex items-center justify-center gap-2 py-4 rounded-[18px] border-2 border-dashed border-line text-inksoft font-bold text-[14px]"
+          onClick={() => navigate("/buscar")}
+        >
+          <Icon name="search" size={17} /> Encontrar novo profissional
+        </button>
+      )}
     </div>
   );
 }

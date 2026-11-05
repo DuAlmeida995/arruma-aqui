@@ -3,10 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import Avatar from "../components/Avatar.jsx";
 import { api } from "../api.js";
+import { useAuth } from "../auth.jsx";
 
 export default function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [pro, setPro] = useState(null);
   const [convId, setConvId] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -27,6 +29,10 @@ export default function Profile() {
     );
   }
 
+  const digits = (pro.whatsapp || "").replace(/\D/g, "");
+  const whatsappUrl = digits
+    ? `https://wa.me/${digits.startsWith("55") ? digits : "55" + digits}?text=${encodeURIComponent("Olá! Vi seu perfil no Arruma Aqui.")}`
+    : null;
   const yearsMatch = pro.exp.match(/^(\d+)/);
   const yearsLabel = yearsMatch ? `${yearsMatch[1]} ${yearsMatch[1] === "1" ? "ano" : "anos"}` : "—";
   const isNew = pro.reviews === 0;
@@ -129,24 +135,32 @@ export default function Profile() {
         </div>
       </Block>
 
-      {/* CTA fixo */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-40 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-bg via-bg to-bg/0">
-        <div className="flex gap-2.5">
-          <button
-            className="pressable w-14 h-14 rounded-[18px] bg-white shadow-card flex items-center justify-center flex-none"
-            aria-label="Ligar"
-          >
-            <Icon name="phone" size={21} color="#14171F" />
-          </button>
-          <button
-            className="pressable flex-1 h-14 rounded-[18px] bg-primary text-white font-extrabold text-[15.5px] shadow-glow flex items-center justify-center gap-2"
-            onClick={() => navigate(convId ? `/chat/${convId}` : "/chat")}
-          >
-            <Icon name="chat" size={19} color="#fff" />
-            Conversar com {pro.name.split(" ")[0]}
-          </button>
+      {/* CTA fixo (só clientes iniciam contato) */}
+      {authUser?.role === "client" && (
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-40 px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-bg via-bg to-bg/0">
+          <div className="flex gap-2.5">
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pressable w-14 h-14 rounded-[18px] bg-white shadow-card flex items-center justify-center flex-none"
+                aria-label={`Abrir WhatsApp de ${pro.name}`}
+                title="WhatsApp"
+              >
+                <Icon name="phone" size={21} color="#1F9D63" />
+              </a>
+            )}
+            <button
+              className="pressable flex-1 h-14 rounded-[18px] bg-primary text-white font-extrabold text-[15.5px] shadow-glow flex items-center justify-center gap-2"
+              onClick={() => navigate(convId ? `/chat/${convId}` : `/chat/novo/${pro.id}`)}
+            >
+              <Icon name="chat" size={19} color="#fff" />
+              {convId ? "Continuar conversa" : `Conversar com ${pro.name.split(" ")[0]}`}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
