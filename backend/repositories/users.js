@@ -1,0 +1,21 @@
+// Acesso a usuários no Postgres
+const db = require("../db");
+
+module.exports = {
+  async findByEmail(email) {
+    const { rows } = await db.query("select * from users where lower(email) = lower($1) and deleted_at is null", [email]);
+    return rows[0] || null;
+  },
+  async findById(id) {
+    const { rows } = await db.query("select * from users where id = $1 and deleted_at is null", [id]);
+    return rows[0] || null;
+  },
+  async create({ name, email, passwordHash, role, phone, bairro, city }) {
+    const { rows } = await db.query(
+      `insert into users (name, email, password_hash, role, phone, bairro, city)
+       values ($1, lower($2), $3, $4, $5, $6, $7) returning *`,
+      [name, email, passwordHash, role, phone ?? null, bairro ?? null, city ?? null]
+    );
+    return rows[0];
+  },
+};
