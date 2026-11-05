@@ -13,14 +13,14 @@
 const DEMO_PASSWORD = "demo1234"; // senha de todas as contas fictícias (só para demo/teste)
 
 const categories = [
-  { id: "eletrica", label: "Elétrica", icon: "bolt", roles: ["Eletricista"], services: ["Instalação elétrica", "Troca de disjuntores", "Chuveiro elétrico", "Tomadas e interruptores", "Quadro de força"] },
-  { id: "hidraulica", label: "Hidráulica", icon: "droplet", roles: ["Encanador", "Encanadora"], services: ["Reparo de vazamentos", "Desentupimento", "Troca de registros", "Instalação de metais", "Caixa d'água"] },
-  { id: "limpeza", label: "Limpeza", icon: "sparkle", roles: ["Diarista"], services: ["Limpeza geral", "Limpeza pós-obra", "Organização de ambientes"] },
-  { id: "pintura", label: "Pintura", icon: "brush", roles: ["Pintor", "Pintora"], services: ["Pintura interna", "Pintura de fachada", "Textura e grafiato", "Massa corrida"] },
-  { id: "jardinagem", label: "Jardinagem", icon: "sprout", roles: ["Jardineiro", "Jardineira"], services: ["Poda", "Manutenção de grama", "Plantio", "Paisagismo básico"] },
-  { id: "montagem", label: "Montagem", icon: "wrench", roles: ["Montador de Móveis", "Montadora de Móveis"], services: ["Montagem de armários", "Montagem de camas", "Fixação de prateleiras", "Desmontagem para mudança"] },
-  { id: "reparos", label: "Reparos", icon: "box", roles: ["Técnico de Manutenção", "Marido de Aluguel"], services: ["Troca de fechaduras", "Reparo em portas", "Fixação de itens", "Pequenos reparos"] },
-  { id: "costura", label: "Costura", icon: "scissors", roles: ["Costureira", "Alfaiate"], services: ["Ajuste de roupas", "Reparo de estofados", "Cortinas sob medida"] },
+  { id: "eletrica", label: "Elétrica", icon: "bolt", roles: { m: "Eletricista", f: "Eletricista" }, services: ["Instalação elétrica", "Troca de disjuntores", "Chuveiro elétrico", "Tomadas e interruptores", "Quadro de força"] },
+  { id: "hidraulica", label: "Hidráulica", icon: "droplet", roles: { m: "Encanador", f: "Encanadora" }, services: ["Reparo de vazamentos", "Desentupimento", "Troca de registros", "Instalação de metais", "Caixa d'água"] },
+  { id: "limpeza", label: "Limpeza", icon: "sparkle", roles: { m: "Diarista", f: "Diarista" }, services: ["Limpeza geral", "Limpeza pós-obra", "Organização de ambientes"] },
+  { id: "pintura", label: "Pintura", icon: "brush", roles: { m: "Pintor", f: "Pintora" }, services: ["Pintura interna", "Pintura de fachada", "Textura e grafiato", "Massa corrida"] },
+  { id: "jardinagem", label: "Jardinagem", icon: "sprout", roles: { m: "Jardineiro", f: "Jardineira" }, services: ["Poda", "Manutenção de grama", "Plantio", "Paisagismo básico"] },
+  { id: "montagem", label: "Montagem", icon: "wrench", roles: { m: "Montador de Móveis", f: "Montadora de Móveis" }, services: ["Montagem de armários", "Montagem de camas", "Fixação de prateleiras", "Desmontagem para mudança"] },
+  { id: "reparos", label: "Reparos", icon: "box", roles: { m: "Técnico de Manutenção", f: "Técnica de Manutenção" }, services: ["Troca de fechaduras", "Reparo em portas", "Fixação de itens", "Pequenos reparos"] },
+  { id: "costura", label: "Costura", icon: "scissors", roles: { m: "Alfaiate", f: "Costureira" }, services: ["Ajuste de roupas", "Reparo de estofados", "Cortinas sob medida"] },
 ];
 
 // Centro aproximado de bairros de São Paulo [lat, lng]
@@ -51,6 +51,9 @@ const reviewTexts = {
   1: ["Não resolveu o problema."],
 };
 
+const femaleNames = new Set(["Ana", "Carla", "Eduarda", "Gabriela", "Isabela", "Karina", "Mariana", "Olívia", "Quésia", "Sílvia", "Úrsula", "Yara", "Patrícia", "Luana", "Tânia"]);
+const isFemale = (fullName) => femaleNames.has(fullName.split(" ")[0]);
+
 // PRNG determinístico (mulberry32) para a base ser sempre igual
 function rng(seed) {
   let a = seed >>> 0;
@@ -70,6 +73,11 @@ function slug(s) {
 function buildSeed({ seed = 42, providerCount = 60, clientCount = 15 } = {}) {
   const rand = rng(seed);
   const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+  const describe = (cat, bairro) => {
+    const a = pick(cat.services);
+    const rest = cat.services.filter((x) => x !== a);
+    return `${a} e ${pick(rest).toLowerCase()}, com atendimento em ${bairro} e região.`;
+  };
   const jitter = () => (rand() - 0.5) * 0.006; // ~±300 m
   const usedEmails = new Set();
   const users = [];
@@ -107,8 +115,8 @@ function buildSeed({ seed = 42, providerCount = 60, clientCount = 15 } = {}) {
     const u = makeUser("provider", bairro);
     const p = {
       user_id: u.id,
-      role_title: pick(cat.roles),
-      description: `${pick(cat.services)} e ${pick(cat.services).toLowerCase()} com atendimento em ${bairro} e região.`,
+      role_title: isFemale(u.name) ? cat.roles.f : cat.roles.m,
+      description: describe(cat, bairro),
       experience_years: 1 + Math.floor(rand() * 15),
       bairro,
       city: "São Paulo",

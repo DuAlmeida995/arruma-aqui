@@ -1,53 +1,47 @@
 const express = require("express");
-const { professionals, getReviews } = require("../data/mockData");
+const repo = require("../repositories/professionals");
+const { currentUser } = require("../middleware/currentUser");
+const { sortAndView, toCandidate, toView } = require("../services/professionalView");
 
 const router = express.Router();
+router.use(currentUser);
 
-function parseDist(dist) {
-  return parseFloat(dist.replace(",", "."));
-}
-
-// GET /api/professionals?q=eletricista&cat=eletrica&maxDist=3&sort=rating|dist
-router.get("/", (req, res) => {
-  const { q, cat, maxDist, sort } = req.query;
-  let list = [...professionals];
-
-  if (q && q.trim()) {
-    const term = q.trim().toLowerCase();
-    list = list.filter(
-      (p) =>
-        p.name.toLowerCase().includes(term) ||
-        p.role.toLowerCase().includes(term) ||
-        p.cat.toLowerCase().includes(term) ||
-        p.desc.toLowerCase().includes(term)
-    );
+// GET /api/professionals?q=&cat=&maxDist=&sort=relevance|rating|dist&weekday=
+router.get("/", async (req, res, next) => {
+  try {
+    const { q, cat, sort } = req.query;
+    const maxDist = parseFloat(req.query.maxDist);
+    const weekday = req.query.weekday != null && req.query.weekday !== "" ? Number(req.query.weekday) : undefined;
+    const rows = await repo.search({
+      lat: req.me.lat,
+      lng: req.me.lng,
+      q,
+      cat,
+      maxDistKm: Number.isFinite(maxDist) && maxDist > 0 ? maxDist : null,
+    });
+    const results = sortAndView(rows, { sort, weekday, radiusKm: Number.isFinite(maxDist) && maxDist > 0 ? maxDist : 10 });
+    res.json({ total: results.length, results });
+  } catch (err) {
+    next(err);
   }
-
-  if (cat) {
-    list = list.filter((p) => p.cat === cat);
-  }
-
-  if (maxDist) {
-    const max = parseFloat(maxDist);
-    if (!Number.isNaN(max)) {
-      list = list.filter((p) => parseDist(p.dist) <= max);
-    }
-  }
-
-  if (sort === "rating") {
-    list.sort((a, b) => b.rating - a.rating);
-  } else if (sort === "dist") {
-    list.sort((a, b) => parseDist(a.dist) - parseDist(b.dist));
-  }
-
-  res.json({ total: list.length, results: list });
 });
 
 // GET /api/professionals/:id
-router.get("/:id", (req, res) => {
-  const pro = professionals.find((p) => p.id === Number(req.params.id));
-  if (!pro) return res.status(404).json({ error: "Profissional não encontrado." });
-  res.json({ ...pro, reviewsList: getReviews(pro.id) });
+router.get("/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(404).json({ error: "Profissional não encontrado." });
+    const row = await repo.findById(id, { lat: req.me.lat, lng: req.me.lng });
+    if (!row || !row.active) return res.status(404).json({ error: "Profissional não encontrado." });
+    const reviews = await repo.reviews(id);
+    res.json({
+      ...toView(toCandidate(row)),
+      whatsapp: row.whatsapp,
+      reviewsList: reviews.map((r) => ({ name: r.name, stars: r.stars, text: r.text })),
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

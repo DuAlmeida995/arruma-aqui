@@ -11,7 +11,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] Migration: extensão PostGIS; tabelas `users`, `provider_profiles` (com `geography(Point)` e `radius_km`), `categories`, `provider_categories`, `availability`, `requests`, `contacts`, `services`, `reviews`, `events`; FKs e índices (GIST na localização)
 - [x] Script `npm run db:migrate` que aplica migrations em ordem
 - [x] Seed fictício: ~60 prestadores em SP com casos-limite (sem avaliação, região com poucos, notas empatadas, fora da área); `npm run db:seed`
-- [ ] Trocar `mockData.js` pelas consultas ao banco mantendo os endpoints atuais (front continua funcionando)
+- [x] Trocar `mockData.js` pelas consultas ao banco mantendo os endpoints atuais (front continua funcionando)
 
 ## Fase 2 — Contas (Ativ. 5, 7)
 - [x] `POST /auth/register` (cliente ou prestador), `POST /auth/login`, `GET /auth/me`; bcrypt + JWT 24h; middleware de papel (validado também no Supabase)
@@ -28,7 +28,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] `backend/config/ranking.json` com pesos; score normalizado (distância, nota bayesiana com prior neutro, nº avaliações, disponibilidade, tempo de resposta, contatos bem-sucedidos)
 - [ ] Resposta inclui "por que recomendado" (ranking explicável) e a UI mostra isso no card
 - [x] `docs/cenarios.json` (elétrica, hidráulica, pintura, montagem, reparos…) + script `npm run eval` que compara ranking vs busca simples e imprime % de cenários adequados (meta ≥ 80%)
-- [ ] Ranking atinge ≥ 80% nos cenários (hoje 70% vs 20% da busca simples — ver `docs/ranking-log.md`); revisar critério de "adequado" com a equipe e ampliar cenários
+- [ ] Ranking ≥ 80% de forma robusta: ampliar cenários e avaliar em várias sementes do seed (hoje oscila 70–90% vs 20–50% da busca simples — ver `docs/ranking-log.md`); revisar critério de "adequado" com a equipe
 
 ## Fase 5 — Fluxo principal (Ativ. 5)
 - [ ] Cliente cria solicitação (categoria, descrição, quando) → vê lista recomendada

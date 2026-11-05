@@ -38,3 +38,6 @@ Também: `ratingFloor = 3` — a nota passa a ser normalizada como `(nota_bayesi
 - `availability` quase não discrimina porque a disponibilidade já é filtro eliminatório.
 - `successRate` é uniforme na base fictícia (todo contato vira serviço); só terá efeito com dados reais do piloto.
 - Próximo passo: ampliar os cenários e revisar se a nota mínima 3,8 é o critério certo de "adequado" com a equipe.
+
+## Observação — sensibilidade à base fictícia
+Ao corrigir o gerador do seed (gênero das profissões e descrições repetidas), a sequência aleatória mudou e, **com os mesmos pesos v2**, o resultado foi de 70% → **90%** (busca simples 20% → 50%). Ou seja: com ~10 cenários viáveis, cada cenário vale 10 pontos e o número oscila muito com a base. O ganho do ranking sobre a busca simples se manteve (+40 a +50 pontos), mas **não dá para afirmar que a meta de 80% está garantida** sem mais cenários e, idealmente, avaliar em várias sementes da base.
