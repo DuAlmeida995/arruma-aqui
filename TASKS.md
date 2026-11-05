@@ -5,7 +5,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 0 — Fundação
 - [x] Commitar o trabalho de UI pendente; `.gitignore` com `.env*`; `.env.example` no backend e frontend
 - [x] Vitest + Supertest no backend com 1 teste de `/api/health`; script `npm test`
-- [ ] Backend lê `DATABASE_URL` e testa conexão com o Supabase (`/api/health` mostra `db: ok`)
+- [ ] (BLOQUEADO: ver BLOCKED.md — código pronto, falta CA) Backend lê `DATABASE_URL` e testa conexão com o Supabase (`/api/health` mostra `db: ok`)
 
 ## Fase 1 — Banco (Ativ. 2)
 - [ ] Migration: extensão PostGIS; tabelas `users`, `provider_profiles` (com `geography(Point)` e `radius_km`), `categories`, `provider_categories`, `availability`, `requests`, `contacts`, `services`, `reviews`, `events`; FKs e índices (GIST na localização)

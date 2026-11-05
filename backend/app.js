@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const { checkDb } = require("./db");
 
 const categoriesRouter = require("./routes/categories");
 const professionalsRouter = require("./routes/professionals");
@@ -11,7 +12,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+app.get("/api/health", async (req, res) => {
+  res.json({ status: "ok", db: await checkDb() });
+});
 
 app.use("/api/categories", categoriesRouter);
 app.use("/api/professionals", professionalsRouter);
