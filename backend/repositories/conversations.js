@@ -1,4 +1,5 @@
 const db = require("../db");
+const events = require("../services/events");
 
 async function listForUser(userId) {
   const { rows } = await db.query(
@@ -50,6 +51,11 @@ async function addMessage(contactId, senderId, text) {
     [contactId, senderId]
   );
   if (first.rowCount) {
+    const t = await db.query(
+      "select round(extract(epoch from (responded_at - created_at)) / 60) as minutes from contacts where id = $1",
+      [contactId]
+    );
+    events.track(senderId, "provider_replied", { conversationId: Number(contactId), minutes: Number(t.rows[0].minutes) });
     await db.query(
       `update provider_profiles set avg_response_minutes = (
          select round(avg(extract(epoch from (responded_at - created_at)) / 60))

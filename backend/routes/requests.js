@@ -1,4 +1,5 @@
 // Solicitações do cliente: descreve o que precisa e recebe a lista recomendada
+const events = require("../services/events");
 const express = require("express");
 const { z } = require("zod");
 const repo = require("../repositories/requests");
@@ -45,6 +46,15 @@ const weekdayOf = (iso) => (iso ? new Date(`${iso}T12:00:00Z`).getUTCDay() : und
 
 async function withRecommendations(r, me) {
   const found = await findProfessionals(me, { cat: r.category_id, weekday: weekdayOf(r.desired_date) });
+  events.track(me.id, "list_shown", {
+    source: "request",
+    requestId: Number(r.id),
+    cat: r.category_id,
+    total: found.total,
+    radiusKm: found.search.radiusKm,
+    expanded: found.search.expanded,
+    top: found.results.slice(0, 10).map((p) => p.id),
+  });
   return { request: view(r), ...found };
 }
 
@@ -64,6 +74,7 @@ router.post("/", async (req, res, next) => {
       lat: req.me.lat,
       lng: req.me.lng,
     });
+    events.track(req.me.id, "request_created", { requestId: Number(r.id), cat: d.categoryId, hasDate: Boolean(d.desiredDate) });
     res.status(201).json(await withRecommendations(r, req.me));
   } catch (err) {
     next(err);

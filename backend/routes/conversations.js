@@ -1,4 +1,5 @@
 const express = require("express");
+const events = require("../services/events");
 const repo = require("../repositories/conversations");
 const { currentUser } = require("../middleware/currentUser");
 const { chatTime } = require("../services/format");
@@ -42,6 +43,7 @@ router.post("/", async (req, res, next) => {
     }
     const { id, created } = await repo.findOrCreate(req.me.id, providerId, requestId);
     await repo.addMessage(id, req.me.id, text);
+    if (created) events.track(req.me.id, "contact_started", { conversationId: id, providerId, requestId });
     res.status(created ? 201 : 200).json({ id, created });
   } catch (err) {
     next(err);
@@ -116,6 +118,7 @@ router.post("/:id/review", async (req, res, next) => {
     const out = await services.review(conv, parsed.data);
     if (out.error === "not_done") return res.status(409).json({ error: "Marque o serviço como realizado antes de avaliar." });
     if (out.error === "already") return res.status(409).json({ error: "Você já avaliou este serviço." });
+    events.track(req.me.id, "review_created", { conversationId: Number(conv.id), providerId: Number(conv.provider_id), stars: parsed.data.stars });
     res.status(201).json({ service: serviceView(out.service, conv, req.me) });
   } catch (err) {
     next(err);

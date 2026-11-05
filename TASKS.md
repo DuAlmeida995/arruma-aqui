@@ -38,7 +38,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] Área do prestador: minhas conversas, meus serviços, minhas avaliações
 
 ## Fase 6 — Métricas (Ativ. 1, 8)
-- [ ] Registrar eventos: solicitação criada, lista exibida, perfil aberto, contato iniciado, resposta do prestador, avaliação
+- [x] Registrar eventos: solicitação criada, lista exibida, perfil aberto, contato iniciado, resposta do prestador, avaliação (ver `docs/metricas.md`)
 - [ ] Página `/admin/metricas` (só admin): tempo até contato, taxa de contato, conversão, média de satisfação
 
 ## Fase 7 — Qualidade e segurança (Ativ. 7)

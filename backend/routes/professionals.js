@@ -1,4 +1,5 @@
 const express = require("express");
+const events = require("../services/events");
 const repo = require("../repositories/professionals");
 const { currentUser } = require("../middleware/currentUser");
 const { toCandidate, toView } = require("../services/professionalView");
@@ -17,7 +18,19 @@ router.get("/", async (req, res, next) => {
       return res.status(400).json({ error: "Dia da semana inválido (use 0 = domingo a 6 = sábado)." });
     }
     const maxDistKm = Number.isFinite(maxDist) && maxDist > 0 ? maxDist : null;
-    res.json(await findProfessionals(req.me, { q, cat, sort, maxDistKm, weekday: wd }));
+    const out = await findProfessionals(req.me, { q, cat, sort, maxDistKm, weekday: wd });
+    events.track(req.me.id, "list_shown", {
+      source: "search",
+      q: q || null,
+      cat: cat || null,
+      sort: sort || "relevance",
+      weekday: wd ?? null,
+      total: out.total,
+      radiusKm: out.search.radiusKm,
+      expanded: out.search.expanded,
+      top: out.results.slice(0, 10).map((p) => p.id),
+    });
+    res.json(out);
   } catch (err) {
     next(err);
   }
@@ -36,6 +49,7 @@ router.get("/:id", async (req, res, next) => {
       whatsapp: row.whatsapp,
       reviewsList: reviews.map((r) => ({ name: r.name, stars: r.stars, text: r.text })),
     });
+    events.track(req.me.id, "profile_opened", { providerId: id });
   } catch (err) {
     next(err);
   }
