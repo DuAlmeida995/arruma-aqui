@@ -1,21 +1,107 @@
 {
-  "descricao": "Cenários padronizados (Atividade 1 do doc FAPESP). Um cenário é adequado quando os top-3 resultados atendem a categoria, estão dentro do raio da busca e do raio de atendimento do prestador, estão ativos, atendem no dia pedido e têm nota bayesiana >= minNota.",
+  "descricao": "Cenários padronizados (Atividade 1 do doc FAPESP). Critério 'nota + proximidade' (escolhido pela equipe): um prestador é adequado quando atende a categoria, está dentro do raio da busca e do raio de atendimento dele, está ativo, atende no dia pedido, tem nota bayesiana >= minNota e está a no máximo toleranciaKm além do prestador adequado mais próximo. O cenário passa quando os primeiros k = min(topN, nº de adequados) resultados são todos adequados.",
   "topN": 3,
   "minNota": 3.8,
+  "toleranciaKm": 3,
   "cenarios": [
-    { "id": "eletrica-vila-mariana-seg", "categoria": "eletrica", "bairro": "Vila Mariana", "diaSemana": 1, "raioKm": 10 },
-    { "id": "eletrica-lapa-sab", "categoria": "eletrica", "bairro": "Lapa", "diaSemana": 6, "raioKm": 10 },
-    { "id": "hidraulica-saude-ter", "categoria": "hidraulica", "bairro": "Saúde", "diaSemana": 2, "raioKm": 10 },
-    { "id": "hidraulica-tatuape-qua", "categoria": "hidraulica", "bairro": "Tatuapé", "diaSemana": 3, "raioKm": 10 },
-    { "id": "pintura-pinheiros-qui", "categoria": "pintura", "bairro": "Pinheiros", "diaSemana": 4, "raioKm": 10 },
-    { "id": "pintura-santana-sex", "categoria": "pintura", "bairro": "Santana", "diaSemana": 5, "raioKm": 12 },
-    { "id": "montagem-moema-seg", "categoria": "montagem", "bairro": "Moema", "diaSemana": 1, "raioKm": 10 },
-    { "id": "montagem-butanta-sab", "categoria": "montagem", "bairro": "Butantã", "diaSemana": 6, "raioKm": 12 },
-    { "id": "reparos-ipiranga-ter", "categoria": "reparos", "bairro": "Ipiranga", "diaSemana": 2, "raioKm": 10 },
-    { "id": "reparos-jabaquara-qua", "categoria": "reparos", "bairro": "Jabaquara", "diaSemana": 3, "raioKm": 10 },
-    { "id": "limpeza-perdizes-qui", "categoria": "limpeza", "bairro": "Perdizes", "diaSemana": 4, "raioKm": 10 },
-    { "id": "jardinagem-mooca-sex", "categoria": "jardinagem", "bairro": "Mooca", "diaSemana": 5, "raioKm": 12 },
-    { "id": "costura-vila-mariana-qua", "categoria": "costura", "bairro": "Vila Mariana", "diaSemana": 3, "raioKm": 10 },
-    { "id": "eletrica-parelheiros-seg", "categoria": "eletrica", "bairro": "Parelheiros", "diaSemana": 1, "raioKm": 15, "nota": "região com poucos profissionais" }
+    {
+      "id": "eletrica-vila-mariana-seg",
+      "categoria": "eletrica",
+      "bairro": "Vila Mariana",
+      "diaSemana": 1,
+      "raioKm": 10
+    },
+    {
+      "id": "eletrica-lapa-sab",
+      "categoria": "eletrica",
+      "bairro": "Lapa",
+      "diaSemana": 6,
+      "raioKm": 10
+    },
+    {
+      "id": "hidraulica-saude-ter",
+      "categoria": "hidraulica",
+      "bairro": "Saúde",
+      "diaSemana": 2,
+      "raioKm": 10
+    },
+    {
+      "id": "hidraulica-tatuape-qua",
+      "categoria": "hidraulica",
+      "bairro": "Tatuapé",
+      "diaSemana": 3,
+      "raioKm": 10
+    },
+    {
+      "id": "pintura-pinheiros-qui",
+      "categoria": "pintura",
+      "bairro": "Pinheiros",
+      "diaSemana": 4,
+      "raioKm": 10
+    },
+    {
+      "id": "pintura-santana-sex",
+      "categoria": "pintura",
+      "bairro": "Santana",
+      "diaSemana": 5,
+      "raioKm": 12
+    },
+    {
+      "id": "montagem-moema-seg",
+      "categoria": "montagem",
+      "bairro": "Moema",
+      "diaSemana": 1,
+      "raioKm": 10
+    },
+    {
+      "id": "montagem-butanta-sab",
+      "categoria": "montagem",
+      "bairro": "Butantã",
+      "diaSemana": 6,
+      "raioKm": 12
+    },
+    {
+      "id": "reparos-ipiranga-ter",
+      "categoria": "reparos",
+      "bairro": "Ipiranga",
+      "diaSemana": 2,
+      "raioKm": 10
+    },
+    {
+      "id": "reparos-jabaquara-qua",
+      "categoria": "reparos",
+      "bairro": "Jabaquara",
+      "diaSemana": 3,
+      "raioKm": 10
+    },
+    {
+      "id": "limpeza-perdizes-qui",
+      "categoria": "limpeza",
+      "bairro": "Perdizes",
+      "diaSemana": 4,
+      "raioKm": 10
+    },
+    {
+      "id": "jardinagem-mooca-sex",
+      "categoria": "jardinagem",
+      "bairro": "Mooca",
+      "diaSemana": 5,
+      "raioKm": 12
+    },
+    {
+      "id": "costura-vila-mariana-qua",
+      "categoria": "costura",
+      "bairro": "Vila Mariana",
+      "diaSemana": 3,
+      "raioKm": 10
+    },
+    {
+      "id": "eletrica-parelheiros-seg",
+      "categoria": "eletrica",
+      "bairro": "Parelheiros",
+      "diaSemana": 1,
+      "raioKm": 15,
+      "nota": "região com poucos profissionais"
+    }
   ]
 }

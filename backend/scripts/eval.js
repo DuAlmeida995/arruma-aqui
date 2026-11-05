@@ -51,7 +51,9 @@ function recommend(cands, sc) {
   return rank(eligible, { weekday: sc.diaSemana, radiusKm: sc.raioKm });
 }
 
-function adequate(c, sc, minNota) {
+// Critério "nota + proximidade" (escolhido pela equipe): além dos filtros e da nota mínima,
+// o prestador não pode estar muito mais longe que o adequado mais próximo daquele cenário.
+function meetsBase(c, sc, minNota) {
   return (
     c.active &&
     c.categories.includes(sc.categoria) &&
@@ -62,14 +64,23 @@ function adequate(c, sc, minNota) {
   );
 }
 
+function adequacyFor(cands, sc, spec) {
+  const base = withDistance(cands, sc).filter((c) => meetsBase(c, sc, spec.minNota));
+  const nearest = base.length ? Math.min(...base.map((c) => c.distanceKm)) : Infinity;
+  const tol = spec.toleranciaKm ?? Infinity;
+  const ok = new Set(base.filter((c) => c.distanceKm <= nearest + tol).map((c) => c.id));
+  return { count: ok.size, isAdequate: (c) => ok.has(c.id) };
+}
+
 function evaluate(data = buildSeed(), spec = scenarios) {
   const cands = candidatesFrom(data);
   const rows = spec.cenarios.map((sc) => {
     // Adequado = os primeiros k resultados são adequados, onde k = min(topN, nº de adequados existentes).
     // Se não há nenhum prestador adequado na região, o cenário é inviável e não entra na conta.
-    const achievable = withDistance(cands, sc).filter((c) => adequate(c, sc, spec.minNota)).length;
+    const adq = adequacyFor(cands, sc, spec);
+    const achievable = adq.count;
     const k = Math.min(spec.topN, achievable);
-    const judge = (list) => k > 0 && list.slice(0, k).every((c) => adequate(c, sc, spec.minNota));
+    const judge = (list) => k > 0 && list.slice(0, k).every(adq.isAdequate);
     const t0 = process.hrtime.bigint();
     const rec = recommend(cands, sc);
     const ms = Number(process.hrtime.bigint() - t0) / 1e6;
@@ -85,13 +96,21 @@ function evaluate(data = buildSeed(), spec = scenarios) {
       simples: judge(simpleSearch(cands, sc)),
       ranking: judge(rec),
       soNota: judge(byRating),
+      soDistancia: judge([...rec].sort((a, b) => a.distanceKm - b.distanceKm || a.id - b.id)),
       candidatos: rec.length,
       ms,
     };
   });
   const viable = rows.filter((r) => r.viavel);
   const pct = (key) => Math.round((100 * viable.filter((r) => r[key]).length) / viable.length);
-  return { rows, simples: pct("simples"), ranking: pct("ranking"), soNota: pct("soNota"), pesos: cfg.version };
+  return {
+    rows,
+    simples: pct("simples"),
+    ranking: pct("ranking"),
+    soNota: pct("soNota"),
+    soDistancia: pct("soDistancia"),
+    pesos: cfg.version,
+  };
 }
 
 // Cenários gerados: cada categoria × cada bairro (exceto Parelheiros), dias da semana alternados.
@@ -121,6 +140,7 @@ function evaluateRobust({ seeds = Array.from({ length: 20 }, (_, k) => k + 1), s
     simples: stat("simples"),
     ranking: stat("ranking"),
     soNota: stat("soNota"),
+    soDistancia: stat("soDistancia"),
     pesos: cfg.version,
   };
 }
@@ -130,7 +150,12 @@ module.exports = { evaluate, evaluateRobust, generateScenarios, candidatesFrom, 
 if (require.main === module && process.argv.includes("--robusto")) {
   const out = evaluateRobust();
   console.log(`Pesos v${out.pesos} — ${out.cenarios} cenários × ${out.bases} bases fictícias`);
-  console.table({ "busca simples": out.simples, ranking: out.ranking, "só nota (referência)": out.soNota });
+  console.table({
+    "busca simples": out.simples,
+    ranking: out.ranking,
+    "só nota (referência)": out.soNota,
+    "só distância (referência)": out.soDistancia,
+  });
   process.exitCode = out.ranking.media >= 80 ? 0 : 1;
 } else if (require.main === module) {
   const out = evaluate();

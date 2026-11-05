@@ -29,7 +29,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] Resposta inclui "por que recomendado" (ranking explicável) e a UI mostra isso no card
 - [x] `docs/cenarios.json` (elétrica, hidráulica, pintura, montagem, reparos…) + script `npm run eval` que compara ranking vs busca simples e imprime % de cenários adequados (meta ≥ 80%)
 - [x] Avaliação robusta: 96 cenários gerados × 20 bases (`npm run eval:robusto`) com linhas de base — ranking ~74% vs busca simples ~13%
-- [ ] (BLOQUEADO: decisão da equipe — ver BLOCKED.md) Escolher critério de "adequado" que considere distância e reajustar pesos para ≥ 80%
+- [x] Critério "nota + proximidade" (decisão da equipe) e pesos v3: ranking 83,6% vs busca simples 28,4% (`docs/ranking-log.md`)
 
 ## Fase 5 — Fluxo principal (Ativ. 5)
 - [x] Cliente cria solicitação (categoria, descrição, quando) → vê lista recomendada

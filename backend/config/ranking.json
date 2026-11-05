@@ -1,12 +1,12 @@
 {
-  "version": 2,
+  "version": 3,
   "weights": {
-    "distance": 0.25,
-    "rating": 0.45,
+    "distance": 0.2,
+    "rating": 0.55,
     "reviewCount": 0.1,
-    "availability": 0.05,
-    "responseTime": 0.1,
-    "successRate": 0.05
+    "availability": 0.03,
+    "responseTime": 0.075,
+    "successRate": 0.045
   },
   "priors": {
     "ratingMean": 3.5,

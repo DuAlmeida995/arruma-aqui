@@ -57,3 +57,23 @@ Sugestões de critério para a equipe escolher:
 1. **Nota + proximidade relativa:** adequado = filtros + nota ≥ 3,8 + distância no máximo X km acima do adequado mais próximo (ex.: X = 3).
 2. **Comparação par a par:** o ranking é melhor que a busca simples quando, para os mesmos candidatos, os top-3 têm nota média maior *sem* aumentar a distância média em mais de Y km.
 3. **Julgamento humano:** a equipe classifica os top-3 de uma amostra de cenários como adequado/não adequado (mais próximo do que o doc descreve na Atividade 4).
+
+## v3 — critério "nota + proximidade" (decisão da equipe)
+**Critério adotado:** um prestador é *adequado* quando passa nos filtros (categoria, raio da busca, raio de atendimento, ativo, disponível no dia), tem nota bayesiana ≥ 3,8 **e** está a no máximo **3 km** além do prestador adequado mais próximo naquele cenário (`toleranciaKm` em `docs/cenarios.json`). O cenário passa quando os primeiros `k = min(3, nº de adequados)` resultados são todos adequados.
+
+Com esse critério a métrica deixa de premiar uma ordenação só por nota (antes 100%):
+
+| Ordenação (96 cenários × 20 bases) | v2 | **v3** |
+|---|---|---|
+| Busca simples | 28,4% | 28,4% |
+| Só nota (referência) | 78,5% | 78,5% |
+| Só distância (referência) | 41,1% | 41,1% |
+| **Ranking** | 79,9% | **83,6%** (mín 73%, máx 94%) |
+
+**Pesos v3:** distance 0,20 · rating 0,55 · reviewCount 0,10 · availability 0,03 · responseTime 0,075 · successRate 0,045 · `ratingFloor` 3.
+
+**Como foram escolhidos (sem sobreajuste):** busca em grade avaliada só nas bases 1–10 (treino), aceitando apenas combinações em que um prestador novo, sem avaliações, recebe nota neutra (> 0), como pede o doc (Atividade 4). A melhor combinação do treino (84,6%) foi então medida nas bases 11–20, que não participaram da escolha: **82,6%**. O ranking supera as duas referências isoladas (nota e distância), o que indica que ele combina os dois critérios em vez de imitar um deles.
+
+**Por que não a combinação com `ratingFloor` 3,5 (que fez 85,2% no treino):** com o piso igual à nota neutra (3,5), um prestador novo ficava com fator de nota zero e ia para o fim da lista — o teste automático pegou isso.
+
+**Limitação:** em algumas bases o ranking cai para ~73%; a média atinge a meta, mas não todas as bases individualmente. Com dados reais do piloto os pesos devem ser reavaliados.
