@@ -9,7 +9,7 @@ O banco já está pronto (migration aplicada e seed carregado). Faltam só as du
 1. Entre em <https://render.com> com o GitHub (conta gratuita).
 2. **New → Blueprint** → escolha o repositório `arruma-aqui`. O Render lê o arquivo `render.yaml` da raiz e cria o serviço `arruma-aqui-api`.
 3. Ele vai pedir os valores marcados como "sync: false":
-   - `DATABASE_URL`: a mesma connection string do `backend/.env` (Supabase → Connect → Session pooler).
+   - `DATABASE_URL`: a mesma connection string do `backend/.env` (Supabase → Connect → Transaction pooler, porta 6543).
    - `CORS_ORIGIN`: deixe `http://localhost:5173` por enquanto; você troca no passo 3.
    (`JWT_SECRET` é gerado sozinho; `TRUST_PROXY=1` e `NODE_VERSION=22` já vêm prontos.)
 4. Espere o deploy terminar e abra `https://<seu-servico>.onrender.com/api/health`. Tem que aparecer `{"status":"ok","db":"ok"}`.
@@ -57,3 +57,15 @@ Contas de demo (todas fictícias, senha `demo1234`): `cliente@exemplo.com`, `adm
 
 - Apague os eventos de teste: no Supabase → SQL Editor → `delete from events;`
 - Se quiser recomeçar a base fictícia: `npm run db:seed` dentro de `backend/` (apaga tudo e recria).
+
+## Diagnóstico de conexão
+
+A API limita a conexão a 10 segundos e a espera por consulta a 8 segundos
+(`DB_QUERY_TIMEOUT_MS`). Mantém TCP keepalive e descarta conexões que falham.
+Não repete consultas automaticamente: uma resposta perdida não significa que
+uma escrita deixou de ser aplicada. Confira o estado antes de repetir uma ação.
+
+`DB_POOL_MAX` controla o máximo de conexões por processo (5 por padrão; 2 nos testes).
+Os arquivos de teste rodam em sequência para reduzir a concorrência no banco.
+Uma falha de rede não confirma defeito no código nem garante que ele esteja correto:
+execute a suíte completa e o build antes de publicar.

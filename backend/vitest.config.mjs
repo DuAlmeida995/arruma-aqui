@@ -5,6 +5,8 @@ export default defineConfig({
   test: {
     testTimeout: 20000,
     hookTimeout: 20000,
+    // um arquivo por vez: todos usam o mesmo banco no Supabase e o pooler gratuito tem poucas conexões
+    fileParallelism: false,
     coverage: {
       provider: "v8",
       // "regras de negócio" (doc FAPESP, Atividade 7): serviços, rotas, repositórios e middlewares
