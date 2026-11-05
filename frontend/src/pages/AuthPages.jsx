@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -114,17 +115,20 @@ export function Register() {
   const { register, status, user } = useAuth();
   const navigate = useNavigate();
   const [bairros, setBairros] = useState([]);
+  const [listError, setListError] = useState("");
+  const [listLoading, setListLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
   const [form, setForm] = useState({ role: "client", name: "", email: "", password: "", bairro: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   useEffect(() => {
-    api
-      .getBairros()
-      .then(setBairros)
-      .catch(() => setError("Não foi possível carregar a lista de bairros. Recarregue a página."));
-  }, []);
+    let active = true;
+    setListError(""); setListLoading(true);
+    api.getBairros().then((data) => active && setBairros(data)).catch((e) => active && setListError(e.message)).finally(() => active && setListLoading(false));
+    return () => { active = false; };
+  }, [retry]);
 
   useEffect(() => {
     if (status === "authenticated") navigate(user?.role === "provider" ? "/prestador/perfil" : "/", { replace: true });
@@ -176,6 +180,8 @@ export function Register() {
         </div>
 
         <ErrorBox>{error}</ErrorBox>
+        {listLoading && <LoadingMessage message="Carregando bairros…" />}
+        {listError && <LoadError message={listError} onRetry={() => setRetry((n) => n + 1)} />}
         <Field label="Nome" autoComplete="name" value={form.name} onChange={set("name")} placeholder="Seu nome" required />
         <Field label="E-mail" type="email" autoComplete="email" value={form.email} onChange={set("email")} placeholder="voce@exemplo.com" required />
         <Field label="Senha" type="password" autoComplete="new-password" value={form.password} onChange={set("password")} placeholder="Mínimo de 8 caracteres" required />
@@ -199,7 +205,7 @@ export function Register() {
           </span>
         </label>
 
-        <SubmitButton busy={busy}>Criar conta</SubmitButton>
+        <SubmitButton busy={busy || listLoading || !bairros.length}>Criar conta</SubmitButton>
       </form>
 
       <p className="text-center text-[14px] font-semibold text-inksoft mt-6">

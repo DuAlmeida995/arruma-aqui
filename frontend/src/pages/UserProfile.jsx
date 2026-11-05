@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -14,15 +15,21 @@ export default function UserProfile() {
 function ClientProfile() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    api.getUser().then(setUser);
-  }, []);
+    let active = true;
+    setError("");
+    api.getUser().then((data) => active && setUser(data)).catch((e) => active && setError(e.message));
+    return () => { active = false; };
+  }, [retry]);
 
+  if (error) return <div className="flex-1 pb-32"><h1 className="mx-5 mt-6 font-display text-2xl font-bold">Meu perfil</h1><LoadError message={error} onRetry={() => setRetry((n) => n + 1)} /></div>;
   if (!user) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-[3px] border-line border-t-primary animate-spin" />
+        <LoadingMessage message="Carregando seu perfil…" />
       </div>
     );
   }
@@ -62,6 +69,7 @@ function ClientProfile() {
       <section className="px-5 pt-7">
         <h2 className="section-title mb-3">Serviços solicitados</h2>
         <div className="bg-white rounded-card shadow-card overflow-hidden">
+          {!user.requests.length && <EmptyMessage message="Nenhum serviço solicitado ainda. Encontre um profissional na aba Buscar." />}
           {user.requests.map((r, i) => {
             const [name, role] = r.pro.split(/\s[-—]\s/);
             const ongoing = r.status === "Em andamento";
@@ -96,6 +104,7 @@ function ClientProfile() {
       <section className="px-5 pt-7">
         <h2 className="section-title mb-3">Minhas avaliações</h2>
         <div className="flex flex-col gap-2.5">
+          {!user.myReviews.length && <EmptyMessage message="Suas avaliações aparecerão aqui depois que um serviço for concluído." />}
           {user.myReviews.map((r, i) => {
             const [name, role] = r.pro.split(/\s[-—]\s/);
             return (

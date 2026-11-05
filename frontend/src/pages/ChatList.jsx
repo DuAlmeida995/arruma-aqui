@@ -1,3 +1,4 @@
+import { LoadError, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Avatar from "../components/Avatar.jsx";
@@ -10,17 +11,24 @@ export default function ChatList() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [convs, setConvs] = useState(null);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    api.getConversations().then(setConvs);
-  }, []);
+    let active = true;
+    setError("");
+    api.getConversations().then((data) => active && setConvs(data)).catch((e) => active && setError(e.message));
+    return () => { active = false; };
+  }, [retry]);
 
   return (
     <div className="flex-1 pb-32">
       <PageHeader title="Conversas" subtitle={convs ? `${convs.length} conversas ativas` : " "} />
 
+      {error && <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />}
+      {convs?.length === 0 && <div className="mx-5"><EmptyMessage message={user?.role === "provider" ? "Você ainda não recebeu mensagens. Complete seu perfil para aparecer nas buscas." : "Você ainda não tem conversas. Encontre um profissional para começar."} /></div>}
       <div className="mx-5 mt-1 bg-white rounded-card shadow-card overflow-hidden">
-        {!convs &&
+        {!convs && !error &&
           [0, 1, 2].map((i) => (
             <div key={i} className="flex gap-3 items-center px-4 py-4 animate-pulse">
               <div className="w-[52px] h-[52px] rounded-[17px] bg-line" />

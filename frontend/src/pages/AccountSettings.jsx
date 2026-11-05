@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -19,6 +20,9 @@ export default function AccountSettings() {
   const [bairros, setBairros] = useState([]);
   const [msg, setMsg] = useState(null); // { type: "ok" | "error", text }
   const [busy, setBusy] = useState(false);
+  const [listError, setListError] = useState("");
+  const [listLoading, setListLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
 
   const [confirming, setConfirming] = useState(false);
   const [password, setPassword] = useState("");
@@ -26,8 +30,11 @@ export default function AccountSettings() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    api.getBairros().then(setBairros).catch(() => {});
-  }, []);
+    let active = true;
+    setListError(""); setListLoading(true);
+    api.getBairros().then((data) => active && setBairros(data)).catch((e) => active && setListError(e.message)).finally(() => active && setListLoading(false));
+    return () => { active = false; };
+  }, [retry]);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -62,6 +69,8 @@ export default function AccountSettings() {
     <div className="flex-1 pb-32">
       <PageHeader title="Dados da conta" subtitle={user?.email} back />
 
+      {listError && <LoadError message={listError} onRetry={() => setRetry((n) => n + 1)} />}
+      {listLoading && <LoadingMessage message="Carregando bairros…" />}
       <form onSubmit={save} className="mx-5 mt-2 bg-white rounded-card shadow-card p-5 space-y-4" noValidate>
         <label className="block">
           <Label>Nome</Label>
@@ -73,7 +82,7 @@ export default function AccountSettings() {
         </label>
         <label className="block">
           <Label>Bairro</Label>
-          <select className={inputCls} value={form.bairro} onChange={set("bairro")}>
+          <select disabled={listLoading || Boolean(listError)} className={inputCls} value={form.bairro} onChange={set("bairro")}>
             <option value="">Escolha seu bairro</option>
             {bairros.map((b) => (
               <option key={b} value={b}>
@@ -94,7 +103,7 @@ export default function AccountSettings() {
         )}
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || listLoading || Boolean(listError)}
           className="pressable w-full py-3.5 rounded-[16px] bg-primary text-white font-extrabold text-[15px] shadow-glow disabled:opacity-60"
         >
           {busy ? "Salvando…" : "Salvar"}

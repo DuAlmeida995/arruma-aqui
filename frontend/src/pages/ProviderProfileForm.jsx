@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -98,25 +99,30 @@ export default function ProviderProfileForm() {
   const [categories, setCategories] = useState([]);
   const [bairros, setBairros] = useState([]);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    let active = true;
+    setError("");
     Promise.all([api.getProviderProfile(), api.getCategories(), api.getBairros()])
       .then(([{ profile }, cats, bs]) => {
+        if (!active) return;
         setForm(fromProfile(profile, user));
         setIsNew(!profile);
         setCategories(cats);
         setBairros(bs);
       })
-      .catch((err) => setError(err.message));
-  }, [user]);
+      .catch((err) => active && setError(err.message));
+    return () => { active = false; };
+  }, [user, retry]);
 
   if (!form) {
     return (
       <div className="flex-1 pb-32">
         <PageHeader title="Perfil profissional" back />
-        <div className="px-5 text-inksoft font-semibold">{error || "Carregando…"}</div>
+        {error ? <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} /> : <LoadingMessage />}
       </div>
     );
   }

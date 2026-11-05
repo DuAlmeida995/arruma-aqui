@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../auth.jsx";
@@ -29,15 +30,21 @@ export default function AdminMetrics() {
   const [to, setTo] = useState("");
   const [m, setM] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     if (user?.role !== "admin") return;
+    let active = true;
     setError("");
-    api
-      .getMetrics({ from, to })
-      .then(setM)
-      .catch((e) => setError(e.message));
-  }, [from, to, user?.role]);
+    setLoading(true);
+    setM(null);
+    api.getMetrics({ from, to })
+      .then((data) => active && setM(data))
+      .catch((e) => active && setError(e.message))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [from, to, user?.role, retry]);
 
   if (user?.role !== "admin") {
     return (
@@ -63,7 +70,9 @@ export default function AdminMetrics() {
         </label>
       </div>
 
-      {error && <div className="mx-5 mt-4 bg-danger-soft text-danger rounded-[14px] px-4 py-3 font-semibold text-[14px]">{error}</div>}
+      {error && <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />}
+      {loading && <LoadingMessage message="Calculando métricas…" />}
+      {m && Object.values(m.totals).every((n) => n === 0) && <div className="mx-5 mt-4"><EmptyMessage message="Ainda não há eventos neste período. Amplie as datas ou aguarde o uso do aplicativo." /></div>}
 
       {m && (
         <>
@@ -101,7 +110,7 @@ export default function AdminMetrics() {
           </section>
 
           <p className="mx-5 mt-4 text-[12px] text-inksoft font-semibold leading-relaxed">
-            Fórmulas em <code>docs/metricas.md</code>. Antes do piloto, apague os eventos gerados durante o desenvolvimento.
+            As médias e taxas aparecem quando há respostas e contatos suficientes para calculá-las. Use as datas para acompanhar cada período da pesquisa.
           </p>
         </>
       )}

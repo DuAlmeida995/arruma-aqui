@@ -28,27 +28,34 @@ export function setUnauthorizedHandler(fn) {
 
 async function request(path, options = {}) {
   const token = tokenStore.get();
-  let res;
+  const controller = new AbortController();
+  // Dá tempo para o backend de demonstração acordar, sem esperar indefinidamente.
+  const timer = setTimeout(() => controller.abort(), 65000);
   try {
-    res = await fetch(`${BASE_URL}${path}`, {
+    const res = await fetch(`${BASE_URL}${path}`, {
       ...options,
+      signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     });
-  } catch {
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      if (res.status === 401 && token) onUnauthorized();
+      const err = new Error(body.error || "Não foi possível concluir a solicitação. Tente novamente em instantes.");
+      err.status = res.status;
+      throw err;
+    }
+    return await res.json();
+  } catch (err) {
+    if (controller.signal.aborted) throw new Error("O servidor demorou para responder. Confira se a ação foi concluída antes de tentar novamente.");
+    if (err.status) throw err;
     throw new Error("Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.");
+  } finally {
+    clearTimeout(timer);
   }
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 401 && token) onUnauthorized();
-    const err = new Error(body.error || `Erro ${res.status}`);
-    err.status = res.status;
-    throw err;
-  }
-  return res.json();
 }
 
 const post = (path, body) => request(path, { method: "POST", body: JSON.stringify(body) });

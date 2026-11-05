@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -13,29 +14,21 @@ export default function ChatThread() {
   const [conv, setConv] = useState(null);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [retry, setRetry] = useState(0);
   // Mensagens já existentes não animam; só as enviadas nesta sessão.
   const [initialCount, setInitialCount] = useState(0);
   const listRef = useRef(null);
 
   useEffect(() => {
-    if (isNew) {
-      api
-        .getProfessional(proId)
-        .then((p) => {
-          setInitialCount(0);
-          setConv({ proId: p.id, otherIsProvider: true, name: p.name, role: p.role, time: "Nova conversa", messages: [] });
-        })
-        .catch((e) => setError(e.message));
-      return;
-    }
-    api
-      .getConversation(id)
-      .then((c) => {
-        setInitialCount(c.messages.length);
-        setConv(c);
-      })
-      .catch((e) => setError(e.message));
-  }, [id, proId, isNew]);
+    let active = true;
+    setConv(null); setError("");
+    const pending = isNew ? api.getProfessional(proId).then((p) => ({ proId: p.id, otherIsProvider: true, name: p.name, role: p.role, time: "Nova conversa", messages: [] })) : api.getConversation(id);
+    pending.then((c) => {
+      if (!active) return;
+      setInitialCount(c.messages.length); setConv(c);
+    }).catch((e) => active && setError(e.message));
+    return () => { active = false; };
+  }, [id, proId, isNew, retry]);
 
   useEffect(() => {
     const el = listRef.current;
@@ -70,7 +63,7 @@ export default function ChatThread() {
     return (
       <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex flex-col items-center justify-center gap-3 bg-bg px-8 text-center">
         <div className="font-display font-bold text-[18px]">Não foi possível abrir a conversa</div>
-        <div className="text-inksoft text-[14px]">{error}</div>
+        <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />
         <button className="text-primary-dark font-extrabold" onClick={() => navigate("/chat")}>
           Voltar para as conversas
         </button>
@@ -81,7 +74,7 @@ export default function ChatThread() {
   if (!conv) {
     return (
       <div className="fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex items-center justify-center bg-bg">
-        <div className="delayed-fade w-8 h-8 rounded-full border-[3px] border-line border-t-primary" />
+        <LoadingMessage message="Carregando conversa…" />
       </div>
     );
   }
@@ -126,6 +119,7 @@ export default function ChatThread() {
         <div className="self-center text-[11.5px] font-bold text-inksoft bg-white rounded-full px-3 py-1 shadow-card mb-2">
           {conv.time}
         </div>
+        {!isNew && !conv.messages.length && <EmptyMessage message="Esta conversa ainda não tem mensagens. Escreva abaixo para começar." />}
         {isNew && (
           <div className="self-center text-center text-[13px] text-inksoft font-semibold max-w-[85%] mt-6 leading-relaxed">
             Conte o que você precisa. Preço, prazo e condições são combinados direto entre vocês — a plataforma não cobra nada.
@@ -158,6 +152,8 @@ export default function ChatThread() {
           <input
             className="flex-1 min-w-0 bg-transparent text-[14.5px] font-medium outline-none py-2 placeholder:text-inksoft"
             placeholder="Escreva uma mensagem…"
+            maxLength={2000}
+            disabled={sending}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
@@ -168,6 +164,7 @@ export default function ChatThread() {
             }`}
             onClick={send}
             aria-label="Enviar"
+            disabled={sending || !text.trim()}
           >
             <Icon name="send" size={17} color={text.trim() ? "#fff" : "#6B7080"} />
           </button>

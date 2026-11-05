@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -12,19 +13,28 @@ export default function Profile() {
   const [pro, setPro] = useState(null);
   const [convId, setConvId] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    api.getProfessional(id).then(setPro);
+    let active = true;
+    setPro(null);
+    setConvId(null);
+    setError("");
+    api.getProfessional(id).then((p) => active && setPro(p)).catch((e) => active && setError(e.message));
+    // Falha nesta consulta opcional não impede abrir o perfil. Iniciar conversa
+    // no servidor já reaproveita a conversa existente entre os dois usuários.
     api.getConversations().then((convs) => {
-      const match = convs.find((c) => String(c.proId) === String(id));
-      setConvId(match?.id ?? null);
-    });
-  }, [id]);
+      if (active) setConvId(convs.find((c) => String(c.proId) === String(id))?.id ?? null);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [id, retry]);
 
+  if (error) return <div className="flex-1 pb-32"><LoadError message={error} onRetry={() => setRetry((n) => n + 1)} /><button className="mx-5 font-bold text-primary-dark" onClick={() => navigate("/buscar")}>Voltar à busca</button></div>;
   if (!pro) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-[3px] border-line border-t-primary animate-spin" />
+        <LoadingMessage message="Carregando profissional…" />
       </div>
     );
   }
@@ -86,11 +96,12 @@ export default function Profile() {
       </div>
 
       <Block title="Sobre">
-        <p className="m-0 text-[14px] text-inksoft leading-relaxed">{pro.desc}</p>
+        <p className="m-0 text-[14px] text-inksoft leading-relaxed">{pro.desc || "O profissional ainda não adicionou uma apresentação."}</p>
       </Block>
 
       <Block title="Serviços oferecidos">
         <div className="flex flex-wrap gap-2">
+          {!pro.services.length && <EmptyMessage message="Confirme pelo chat os serviços disponíveis." />}
           {pro.services.map((s, i) => (
             <span key={i} className="flex items-center gap-1.5 bg-bg text-ink text-[13px] font-semibold px-3 py-2 rounded-xl">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -116,6 +127,7 @@ export default function Profile() {
         }
       >
         <div className="flex flex-col gap-3">
+          {!pro.reviewsList.length && <EmptyMessage message="Este profissional ainda não recebeu avaliações." />}
           {pro.reviewsList.map((r, i) => (
             <div key={i} className="bg-bg rounded-2xl p-3.5">
               <div className="flex items-center gap-2.5">

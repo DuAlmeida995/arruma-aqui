@@ -1,3 +1,4 @@
+import { LoadError } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -18,10 +19,13 @@ export default function Search() {
   const [searchInfo, setSearchInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadedOnce, setLoadedOnce] = useState(false);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError("");
     api
       .getProfessionals({ q: debouncedQuery, sort, maxDist, weekday: today ? new Date().getDay() : null })
       .then((data) => {
@@ -31,11 +35,12 @@ export default function Search() {
         setSearchInfo(data.search || null);
         setLoadedOnce(true);
       })
+      .catch((e) => { if (!cancelled) { setError(e.message); setPros([]); setSearchInfo(null); } })
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, sort, maxDist, today]);
+  }, [debouncedQuery, sort, maxDist, today, retry]);
 
   const stale = loading || query !== debouncedQuery;
 
@@ -79,7 +84,7 @@ export default function Search() {
       </div>
 
       <div className="px-5 pt-4 pb-3 text-[13px] text-inksoft font-semibold">
-        {loadedOnce ? (
+        {error ? "Busca indisponível" : stale ? "Buscando…" : loadedOnce ? (
           <>
             <span className="text-ink font-extrabold">{total}</span> profissionais encontrados
           </>
@@ -98,13 +103,14 @@ export default function Search() {
         </div>
       )}
 
-      {!loadedOnce && <CardSkeleton />}
+      {error && <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />}
+      {!loadedOnce && loading && <CardSkeleton />}
       <div className={`transition-opacity duration-200 ${stale && loadedOnce ? "opacity-50" : ""}`}>
         {pros.map((p, i) => (
           <ProCard key={p.id} pro={p} index={i} animate={false} />
         ))}
       </div>
-      {loadedOnce && !stale && pros.length === 0 && (
+      {loadedOnce && !error && !stale && pros.length === 0 && (
         <div className="mx-5 py-12 px-6 text-center bg-white rounded-card shadow-card">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-primary-soft flex items-center justify-center mb-3">
             <Icon name="search" size={24} color="#E04E22" />

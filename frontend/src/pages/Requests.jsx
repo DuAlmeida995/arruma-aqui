@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -30,10 +31,15 @@ export function NewRequest() {
   const [desiredDate, setDesiredDate] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch((e) => setError(e.message));
-  }, []);
+    let active = true;
+    setError(""); setListLoading(true);
+    api.getCategories().then((data) => active && setCategories(data)).catch((e) => active && setError(e.message)).finally(() => active && setListLoading(false));
+    return () => { active = false; };
+  }, [retry]);
 
   async function submit(e) {
     e.preventDefault();
@@ -54,6 +60,8 @@ export function NewRequest() {
     <form onSubmit={submit} className="flex-1 pb-36" noValidate>
       <PageHeader title="Novo pedido" subtitle="Conte o que precisa e mostramos quem pode ajudar" back />
 
+      {listLoading && <LoadingMessage message="Carregando categorias…" />}
+      {!listLoading && !categories.length && (error ? <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} /> : <div className="mx-5"><EmptyMessage message="Não há categorias disponíveis no momento." /></div>)}
       <section className="mx-5 mt-2 bg-white rounded-card shadow-card p-5 space-y-5">
         <div>
           <span className="block text-[12.5px] font-extrabold text-inksoft mb-2 px-1">Tipo de serviço</span>
@@ -109,7 +117,7 @@ export function NewRequest() {
         )}
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || listLoading || !categories.length}
           className="pressable w-full py-4 rounded-[16px] bg-primary text-white font-extrabold text-[15px] shadow-glow disabled:opacity-60"
         >
           {busy ? "Buscando profissionais…" : "Ver profissionais recomendados"}
@@ -124,26 +132,34 @@ export function RequestDetail() {
   const location = useLocation();
   const navigate = useNavigate();
   const [data, setData] = useState(location.state?.fresh || null);
+  const [retry, setRetry] = useState(0);
+  const [closing, setClosing] = useState(false);
+  const [closeError, setCloseError] = useState("");
   const [error, setError] = useState("");
 
   // Os dados da criação servem só de prévia; sempre busca a versão atual no servidor
   useEffect(() => {
-    api
-      .getRequest(id)
-      .then(setData)
-      .catch((e) => setError(e.message));
-  }, [id]);
+    let active = true;
+    setError(""); setData(null); setCloseError("");
+    api.getRequest(id).then((d) => active && setData(d)).catch((e) => active && setError(e.message));
+    return () => { active = false; };
+  }, [id, retry]);
 
   async function close() {
-    await api.closeRequest(id);
-    setData((d) => ({ ...d, request: { ...d.request, status: "closed" } }));
+    if (closing) return;
+    setClosing(true); setCloseError("");
+    try {
+      await api.closeRequest(id);
+      setData((d) => ({ ...d, request: { ...d.request, status: "closed" } }));
+    } catch (e) { setCloseError(e.message); }
+    finally { setClosing(false); }
   }
 
   if (error) {
     return (
       <div className="flex-1 pb-32">
         <PageHeader title="Pedido" back />
-        <div className="mx-5 bg-danger-soft text-danger rounded-[14px] px-4 py-3 font-semibold text-[14px]">{error}</div>
+        <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />
       </div>
     );
   }
@@ -174,9 +190,10 @@ export function RequestDetail() {
             </span>
           </div>
           <p className="text-[14px] text-ink mt-3 leading-relaxed">{r.description}</p>
+          {closeError && <p role="alert" className="mt-3 text-danger text-[13px]">{closeError}</p>}
           {r.status === "open" && (
-            <button type="button" onClick={close} className="mt-3 text-[13px] font-bold text-inksoft underline underline-offset-2">
-              Já resolvi, encerrar pedido
+            <button type="button" onClick={close} disabled={closing} className="mt-3 text-[13px] font-bold text-inksoft underline underline-offset-2">
+              {closing ? "Encerrando…" : "Já resolvi, encerrar pedido"}
             </button>
           )}
         </section>

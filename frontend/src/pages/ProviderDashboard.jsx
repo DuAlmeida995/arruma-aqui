@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -42,13 +43,14 @@ export default function ProviderDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(undefined);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    api
-      .getProviderDashboard()
-      .then((r) => setData(r.dashboard))
-      .catch((e) => setError(e.message));
-  }, []);
+    let active = true;
+    setError("");
+    api.getProviderDashboard().then((r) => active && setData(r.dashboard)).catch((e) => active && setError(e.message));
+    return () => { active = false; };
+  }, [retry]);
 
   return (
     <div className="flex-1 pb-32">
@@ -74,7 +76,8 @@ export default function ProviderDashboard() {
         </div>
       </header>
 
-      {error && <div className="mx-5 -mt-10 relative bg-danger-soft text-danger rounded-[14px] px-4 py-3 font-semibold">{error}</div>}
+      {error && <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />}
+      {data === undefined && !error && <LoadingMessage message="Carregando seu painel…" />}
 
       {data === null && (
         <div className="mx-5 -mt-10 relative bg-white rounded-card shadow-card p-5 text-center">

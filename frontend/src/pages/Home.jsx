@@ -1,3 +1,4 @@
+import { LoadError, LoadingMessage, EmptyMessage } from "../components/LoadState.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
@@ -15,22 +16,36 @@ export default function Home() {
   const [activeCat, setActiveCat] = useState(null);
   const [pros, setPros] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [infoError, setInfoError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [infoLoading, setInfoLoading] = useState(true);
   // Cards só animam na primeira carga; trocar de filtro não deve piscar.
   const [animateCards, setAnimateCards] = useState(true);
 
   useEffect(() => {
-    api.getCategories().then(setCategories);
-    api.getUser().then(setUser);
-  }, []);
+    let active = true;
+    setInfoError("");
+    setInfoLoading(true);
+    Promise.all([api.getCategories(), api.getUser()])
+      .then(([cats, me]) => { if (active) { setCategories(cats); setUser(me); } })
+      .catch((e) => active && setInfoError(e.message))
+      .finally(() => active && setInfoLoading(false));
+    return () => { active = false; };
+  }, [retry]);
 
   useEffect(() => {
+    let active = true;
+    setError("");
     setLoading(true);
     if (activeCat !== null) setAnimateCards(false);
     api
       .getProfessionals({ cat: activeCat, sort: "relevance" })
-      .then((data) => setPros(data.results.slice(0, 5)))
-      .finally(() => setLoading(false));
-  }, [activeCat]);
+      .then((data) => active && setPros(data.results.slice(0, 5)))
+      .catch((e) => { if (active) { setError(e.message); setPros([]); } })
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [activeCat, retry]);
 
   const goSearch = () => navigate("/buscar", { state: { query } });
   const firstName = user?.name.split(" ")[0];
@@ -107,6 +122,7 @@ export default function Home() {
         </section>
       )}
 
+      {infoError && <LoadError message={infoError} onRetry={() => setRetry((n) => n + 1)} />}
       {/* Categorias */}
       <section className="px-5 pt-7">
         <div className="flex items-baseline justify-between mb-3.5">
@@ -117,6 +133,8 @@ export default function Home() {
             </button>
           )}
         </div>
+        {infoLoading && <LoadingMessage message="Carregando categorias…" />}
+        {!infoLoading && !infoError && !categories.length && <EmptyMessage message="Não há categorias disponíveis no momento." />}
         <div className="grid grid-cols-4 gap-x-2 gap-y-4">
           {categories.map((c) => {
             const active = activeCat === c.id;
@@ -195,13 +213,14 @@ export default function Home() {
           </button>
         </div>
 
+        {error && <LoadError message={error} onRetry={() => setRetry((n) => n + 1)} />}
         {loading && pros.length === 0 && <CardSkeleton />}
         <div className={`transition-opacity duration-200 ${loading && pros.length > 0 ? "opacity-50" : ""}`}>
           {pros.map((p, i) => (
             <ProCard key={p.id} pro={p} index={i} animate={animateCards} />
           ))}
         </div>
-        {!loading && pros.length === 0 && (
+        {!loading && !error && pros.length === 0 && (
           <div className="mx-5 py-10 text-center text-inksoft text-sm bg-white rounded-card shadow-card">
             Nenhum profissional nessa categoria por enquanto.
           </div>
