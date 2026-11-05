@@ -1,40 +1,60 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { initials, avatarColor } from "../components/avatar.js";
+import Avatar from "../components/Avatar.jsx";
+import PageHeader from "../components/PageHeader.jsx";
+import Icon from "../components/Icon.jsx";
 import { api } from "../api.js";
 
 export default function ChatList() {
   const navigate = useNavigate();
-  const [convs, setConvs] = useState([]);
+  const [convs, setConvs] = useState(null);
 
   useEffect(() => {
     api.getConversations().then(setConvs);
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24">
-      <div className="px-5 pt-[18px] pb-3.5 text-xl font-extrabold text-primary-dark">Conversas</div>
-      {convs.map((c) => (
-        <div
-          key={c.id}
-          className="flex gap-3 items-center px-5 py-3.5 border-b border-line cursor-pointer"
-          onClick={() => navigate(`/chat/${c.id}`)}
-        >
-          <div
-            className="w-[52px] h-[52px] rounded-2xl flex-none flex items-center justify-center font-extrabold text-white"
-            style={{ background: avatarColor(c.proId) }}
-          >
-            {initials(c.name)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-bold text-[14.5px]">
-              {c.name} — {c.role}
+    <div className="flex-1 pb-32">
+      <PageHeader title="Conversas" subtitle={convs ? `${convs.length} conversas ativas` : " "} />
+
+      <div className="mx-5 mt-1 bg-white rounded-card shadow-card overflow-hidden">
+        {!convs &&
+          [0, 1, 2].map((i) => (
+            <div key={i} className="flex gap-3 items-center px-4 py-4 animate-pulse">
+              <div className="w-[52px] h-[52px] rounded-[17px] bg-line" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-1/2 bg-line rounded-full" />
+                <div className="h-3 w-3/4 bg-line rounded-full" />
+              </div>
             </div>
-            <div className="text-[13px] text-inksoft mt-0.5 truncate">"{c.last}"</div>
-          </div>
-          <div className="text-[11px] text-inksoft flex-none">{c.time}</div>
-        </div>
-      ))}
+          ))}
+        {convs?.map((c, i) => (
+          <button
+            key={c.id}
+            className={`w-full text-left flex gap-3.5 items-center px-4 py-4 hover:bg-bg/60 transition-colors ${
+              i < convs.length - 1 ? "border-b border-line" : ""
+            }`}
+            onClick={() => navigate(`/chat/${c.id}`)}
+          >
+            <Avatar id={c.proId} name={c.name} size={52} radius={17} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold text-[15px] truncate">{c.name}</span>
+                <span className="text-[11.5px] font-bold flex-none text-inksoft">{c.time}</span>
+              </div>
+              <div className="text-[12px] font-bold text-primary-dark mt-0.5">{c.role}</div>
+              <div className="text-[13px] text-inksoft truncate mt-0.5">{c.last}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <button
+        className="pressable mx-5 mt-4 w-[calc(100%-40px)] flex items-center justify-center gap-2 py-4 rounded-[18px] border-2 border-dashed border-line text-inksoft font-bold text-[14px]"
+        onClick={() => navigate("/buscar")}
+      >
+        <Icon name="search" size={17} /> Encontrar novo profissional
+      </button>
     </div>
   );
 }

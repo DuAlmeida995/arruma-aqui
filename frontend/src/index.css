@@ -10,6 +10,56 @@
   display: none;
 }
 
+html,
 body {
-  font-family: "Manrope", sans-serif;
+  background: #e9e5dc;
+}
+
+body {
+  font-family: "Manrope", system-ui, sans-serif;
+  color: #14171f;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .pressable {
+    @apply transition-transform duration-150 active:scale-[0.97];
+  }
+  .section-title {
+    @apply font-display text-[19px] font-bold tracking-tight text-ink;
+  }
+  .hero-grain {
+    background-image: radial-gradient(circle at 85% -10%, rgba(255, 106, 61, 0.45), transparent 45%),
+      radial-gradient(circle at -10% 110%, rgba(15, 138, 126, 0.35), transparent 45%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-rise {
+  animation: rise 0.35s ease-out both;
+}
+
+@keyframes delayed-fade {
+  0%,
+  60% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Spinner que só aparece se o carregamento demorar. */
+.delayed-fade {
+  animation: delayed-fade 0.8s linear both, spin 1s linear infinite;
 }

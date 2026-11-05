@@ -5,7 +5,7 @@ const categories = [
   { id: "hidraulica", label: "Hidráulica", icon: "droplet" },
   { id: "limpeza", label: "Limpeza", icon: "sparkle" },
   { id: "pintura", label: "Pintura", icon: "brush" },
-  { id: "jardinagem", label: "Jardinagem", icon: "leaf" },
+  { id: "jardinagem", label: "Jardinagem", icon: "sprout" },
   { id: "montagem", label: "Montagem", icon: "wrench" },
   { id: "reparos", label: "Reparos", icon: "box" },
   { id: "costura", label: "Costura", icon: "scissors" },

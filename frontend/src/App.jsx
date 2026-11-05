@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import BottomNav from "./components/BottomNav.jsx";
 import Home from "./pages/Home.jsx";
 import Search from "./pages/Search.jsx";
@@ -9,8 +10,14 @@ import UserProfile from "./pages/UserProfile.jsx";
 import Settings from "./pages/Settings.jsx";
 
 export default function App() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
-    <div className="max-w-[430px] mx-auto bg-bg min-h-screen flex flex-col relative">
+    <div className="max-w-[430px] mx-auto bg-bg min-h-screen flex flex-col relative sm:shadow-[0_0_80px_-20px_rgba(20,23,31,.25)]">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/buscar" element={<Search />} />

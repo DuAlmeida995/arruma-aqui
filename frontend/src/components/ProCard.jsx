@@ -1,48 +1,45 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "./Icon.jsx";
-import { initials, avatarColor } from "./avatar.js";
+import Avatar from "./Avatar.jsx";
 
-export default function ProCard({ pro }) {
+export default function ProCard({ pro, index = 0, animate = true }) {
   const navigate = useNavigate();
+  const open = () => navigate(`/profissional/${pro.id}`);
 
   return (
-    <div
-      className="bg-white border border-line rounded-card p-3.5 mx-5 mb-3.5 flex gap-3 cursor-pointer"
-      onClick={() => navigate(`/profissional/${pro.id}`)}
+    <article
+      className={`pressable ${animate ? "animate-rise" : ""} bg-white rounded-card shadow-card p-4 mx-5 mb-3 cursor-pointer`}
+      style={animate ? { animationDelay: `${index * 50}ms` } : undefined}
+      onClick={open}
     >
-      <div
-        className="w-16 h-16 rounded-2xl flex-none flex items-center justify-center font-extrabold text-xl text-white"
-        style={{ background: avatarColor(pro.id) }}
-      >
-        {initials(pro.name)}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-[15px] text-ink">{pro.name}</div>
-        <div className="text-[13px] text-primary-dark font-bold mt-0.5">{pro.role}</div>
-        <div className="flex items-center gap-1 text-[12.5px] text-inksoft mt-1 flex-wrap">
-          <Icon name="mappin" size={12} color="#6B7280" /> {pro.bairro}
-          <span className="w-[3px] h-[3px] rounded-full bg-inksoft inline-block mx-0.5" />
-          {pro.dist}
-        </div>
-        <div className="flex items-center gap-1.5 text-[12.5px] mt-0.5">
-          <span className="flex items-center gap-1 font-bold text-ink">
-            <Icon name="star" size={13} color="#E7A33E" /> {pro.rating}
-          </span>
-          <span className="text-inksoft">({pro.reviews} avaliações)</span>
-        </div>
-        {pro.desc && <div className="text-[12.5px] text-inksoft mt-1.5 leading-snug">"{pro.desc}"</div>}
-        <div className="flex justify-end mt-2.5">
-          <button
-            className="bg-primary text-white font-bold text-[12.5px] px-3.5 py-2 rounded-[10px]"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/profissional/${pro.id}`);
-            }}
-          >
-            Ver perfil
-          </button>
+      <div className="flex gap-3.5">
+        <Avatar id={pro.id} name={pro.name} size={60} radius={18} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-[15.5px] text-ink truncate">{pro.name}</span>
+            {pro.rating >= 4.8 && <Icon name="verified" size={16} color="#0F8A7E" />}
+          </div>
+          <div className="text-[13px] text-inksoft font-semibold mt-0.5">{pro.role}</div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="flex items-center gap-1 bg-[#FFF6E4] text-[#9A6410] font-bold text-[12px] px-2 py-[3px] rounded-full">
+              <Icon name="star" size={12} color="#F5B12E" /> {pro.rating.toFixed(1)}
+              <span className="font-semibold text-[#9A6410]/70">({pro.reviews})</span>
+            </span>
+            <span className="flex items-center gap-1 text-[12px] text-inksoft font-semibold">
+              <Icon name="mappin" size={12} /> {pro.dist}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+
+      {pro.desc && <p className="text-[13px] text-inksoft mt-3 leading-relaxed line-clamp-2">{pro.desc}</p>}
+
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-line">
+        <span className="text-[12px] font-semibold text-inksoft">{pro.bairro}</span>
+        <span className="flex items-center gap-1 text-[13px] font-bold text-primary-dark">
+          Ver perfil <Icon name="arrowRight" size={15} />
+        </span>
+      </div>
+    </article>
   );
 }

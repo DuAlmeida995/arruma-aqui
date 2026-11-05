@@ -1,4 +1,13 @@
-export const palette = ["#F0854C", "#2E8B57", "#2E8B8B", "#7A4FBF", "#C15E2A", "#B8563F"];
+export const gradients = [
+  ["#FF8A5B", "#E04E22"],
+  ["#34C08A", "#1F8F5E"],
+  ["#2BB3A6", "#0B6D63"],
+  ["#9B7BEA", "#6A47C7"],
+  ["#F6B347", "#D9822B"],
+  ["#5B8DEF", "#3360C9"],
+  ["#F27BA8", "#C93F7C"],
+  ["#4A5163", "#14171F"],
+];
 
 export function initials(name) {
   return name
@@ -8,6 +17,7 @@ export function initials(name) {
     .join("");
 }
 
-export function avatarColor(id) {
-  return palette[id % palette.length];
+export function avatarGradient(id) {
+  const [a, b] = gradients[Number(id) % gradients.length];
+  return `linear-gradient(140deg, ${a}, ${b})`;
 }
