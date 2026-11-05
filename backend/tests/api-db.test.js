@@ -143,6 +143,27 @@ describe.skipIf(!dbReady)("API com banco", () => {
     }
   });
 
+  it("ids e parâmetros inválidos dão 400 em vez de erro do servidor", async () => {
+    const cases = [
+      ["get", "/api/conversations/abc"],
+      ["get", "/api/requests/abc"],
+      ["get", "/api/professionals/abc"],
+      ["get", "/api/professionals?maxDist=-5"],
+      ["get", `/api/professionals?q=${"x".repeat(500)}`],
+      ["get", "/api/professionals?sort=hack"],
+      ["get", "/api/professionals?cat=DROP%20TABLE"],
+      ["post", "/api/conversations/abc/messages"],
+      ["post", "/api/requests/abc/close"],
+    ];
+    for (const [m, u] of cases) {
+      const res = await request(app)[m](u);
+      expect(res.status, `${m} ${u}`).toBe(400);
+      expect(res.body.error).toBeTruthy();
+    }
+    const bad = await supertest(app).post("/api/conversations").set("Authorization", `Bearer ${token}`).send({ providerId: "abc", text: "oi" });
+    expect(bad.status).toBe(400);
+  });
+
   it("dia da semana inválido dá 400", async () => {
     expect((await request(app).get("/api/professionals?weekday=9")).status).toBe(400);
   });

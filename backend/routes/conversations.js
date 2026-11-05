@@ -1,11 +1,11 @@
 const express = require("express");
+const { validate, id, idParam, z } = require("../middleware/validate");
 const events = require("../services/events");
 const repo = require("../repositories/conversations");
 const { currentUser } = require("../middleware/currentUser");
 const { chatTime } = require("../services/format");
 const db = require("../db");
 const services = require("../repositories/services");
-const { z } = require("zod");
 
 const router = express.Router();
 router.use(currentUser);
@@ -24,14 +24,17 @@ function header(c, me) {
 }
 
 // POST /api/conversations { providerId, text, requestId? } — cliente inicia o contato direto
-router.post("/", async (req, res, next) => {
+const startSchema = z.object({
+  providerId: id("Profissional inválido."),
+  text: z.string({ message: "Escreva uma mensagem antes de enviar." }).trim().min(1, "Escreva uma mensagem antes de enviar.").max(2000, "Mensagem muito longa (máximo de 2000 caracteres)."),
+  requestId: id("Solicitação inválida.").nullable().optional(),
+});
+
+router.post("/", validate({ body: startSchema }), async (req, res, next) => {
   try {
     if (req.me.role !== "client") return res.status(403).json({ error: "Só clientes podem iniciar uma conversa." });
-    const providerId = Number(req.body?.providerId);
-    const requestId = req.body?.requestId ? Number(req.body.requestId) : null;
-    const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
-    if (!text) return res.status(400).json({ error: "Escreva uma mensagem antes de enviar." });
-    if (text.length > 2000) return res.status(400).json({ error: "Mensagem muito longa (máximo de 2000 caracteres)." });
+    const { providerId, text } = req.valid.body;
+    const requestId = req.valid.body.requestId ?? null;
     const pro = await db.query(
       "select 1 from provider_profiles p join users u on u.id = p.user_id where p.user_id = $1 and p.active and u.deleted_at is null",
       [providerId]
@@ -61,9 +64,9 @@ router.get("/", async (req, res, next) => {
 });
 
 // GET /api/conversations/:id
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", validate({ params: idParam }), async (req, res, next) => {
   try {
-    const conv = await repo.findForUser(Number(req.params.id), req.me.id);
+    const conv = await repo.findForUser(req.valid.params.id, req.me.id);
     if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
     const msgs = await repo.messages(conv.id);
     const last = msgs[msgs.length - 1];
@@ -91,9 +94,9 @@ function serviceView(svc, conv, me) {
 }
 
 // POST /api/conversations/:id/service — qualquer um dos dois marca o serviço como realizado
-router.post("/:id/service", async (req, res, next) => {
+router.post("/:id/service", validate({ params: idParam }), async (req, res, next) => {
   try {
-    const conv = await repo.findForUser(Number(req.params.id), req.me.id);
+    const conv = await repo.findForUser(req.valid.params.id, req.me.id);
     if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
     const svc = await services.markDone(conv);
     res.json({ service: serviceView(svc, conv, req.me) });
@@ -108,9 +111,9 @@ const reviewSchema = z.object({
 });
 
 // POST /api/conversations/:id/review { stars, text } — só o cliente, depois do serviço realizado
-router.post("/:id/review", async (req, res, next) => {
+router.post("/:id/review", validate({ params: idParam }), async (req, res, next) => {
   try {
-    const conv = await repo.findForUser(Number(req.params.id), req.me.id);
+    const conv = await repo.findForUser(req.valid.params.id, req.me.id);
     if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
     if (Number(conv.client_id) !== req.me.id) return res.status(403).json({ error: "Só o cliente avalia o serviço." });
     const parsed = reviewSchema.safeParse(req.body || {});
@@ -126,9 +129,9 @@ router.post("/:id/review", async (req, res, next) => {
 });
 
 // POST /api/conversations/:id/messages  { text: "..." }
-router.post("/:id/messages", async (req, res, next) => {
+router.post("/:id/messages", validate({ params: idParam }), async (req, res, next) => {
   try {
-    const conv = await repo.findForUser(Number(req.params.id), req.me.id);
+    const conv = await repo.findForUser(req.valid.params.id, req.me.id);
     if (!conv) return res.status(404).json({ error: "Conversa não encontrada." });
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
     if (!text) return res.status(400).json({ error: "Escreva uma mensagem antes de enviar." });

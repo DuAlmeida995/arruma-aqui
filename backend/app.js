@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const { checkDb } = require("./db");
 
 const categoriesRouter = require("./routes/categories");
@@ -12,8 +14,23 @@ const usersRepo = require("./repositories/users");
 function createApp({ users = usersRepo } = {}) {
   const app = express();
 
+  // Atrás do proxy do Render, TRUST_PROXY=1 faz o limite de tentativas usar o IP real do cliente
+  app.set("trust proxy", Number(process.env.TRUST_PROXY || 0));
+  app.use(helmet());
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: "100kb" }));
+
+  // Limite de tentativas de login/cadastro por IP (contra força bruta).
+  // Nos testes automáticos fica desligado, salvo RATE_LIMIT_IN_TESTS=1.
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: Number(process.env.AUTH_RATE_LIMIT || 20),
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    skip: () => Boolean(process.env.VITEST) && process.env.RATE_LIMIT_IN_TESTS !== "1",
+    message: { error: "Muitas tentativas. Aguarde alguns minutos e tente de novo." },
+  });
+  app.use(["/api/auth/login", "/api/auth/register"], authLimiter);
 
   app.get("/api/health", async (req, res) => {
     res.json({ status: "ok", db: await checkDb() });
@@ -35,6 +52,8 @@ function createApp({ users = usersRepo } = {}) {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
+    if (err.type === "entity.parse.failed") return res.status(400).json({ error: "Corpo da requisição não é um JSON válido." });
+    if (err.type === "entity.too.large") return res.status(413).json({ error: "Requisição grande demais." });
     console.error(err);
     res
       .status(500)

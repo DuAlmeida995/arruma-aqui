@@ -1,7 +1,7 @@
 // Solicitações do cliente: descreve o que precisa e recebe a lista recomendada
+const { validate, id, idParam, z } = require("../middleware/validate");
 const events = require("../services/events");
 const express = require("express");
-const { z } = require("zod");
 const repo = require("../repositories/requests");
 const categoriesRepo = require("../repositories/categories");
 const { currentUser } = require("../middleware/currentUser");
@@ -91,9 +91,9 @@ router.get("/", async (req, res, next) => {
 });
 
 // GET /api/requests/:id — solicitação + recomendados
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", validate({ params: idParam }), async (req, res, next) => {
   try {
-    const r = await repo.findForClient(Number(req.params.id), req.me.id);
+    const r = await repo.findForClient(req.valid.params.id, req.me.id);
     if (!r) return res.status(404).json({ error: "Solicitação não encontrada." });
     res.json(await withRecommendations(r, req.me));
   } catch (err) {
@@ -102,9 +102,9 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // POST /api/requests/:id/close — cliente encerra (já resolveu ou desistiu)
-router.post("/:id/close", async (req, res, next) => {
+router.post("/:id/close", validate({ params: idParam }), async (req, res, next) => {
   try {
-    const ok = await repo.setStatus(Number(req.params.id), req.me.id, "closed");
+    const ok = await repo.setStatus(req.valid.params.id, req.me.id, "closed");
     if (!ok) return res.status(404).json({ error: "Solicitação não encontrada." });
     res.json({ ok: true });
   } catch (err) {
