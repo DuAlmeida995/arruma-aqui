@@ -79,4 +79,47 @@ async function save(userId, data, { lat, lng }) {
   return get(userId);
 }
 
-module.exports = { get, save };
+// Painel do prestador: números, serviços realizados e avaliações recebidas
+async function dashboard(userId) {
+  const stats = await db.query(
+    `select s.rating_avg, s.rating_count, s.contacts_count, s.services_done, p.avg_response_minutes, p.active
+       from provider_profiles p join provider_stats s on s.provider_id = p.user_id
+      where p.user_id = $1`,
+    [userId]
+  );
+  if (!stats.rows[0]) return null;
+  const services = await db.query(
+    `select s.contact_id, s.completed_at, u.name as client_name, r.stars
+       from services s join users u on u.id = s.client_id
+       left join reviews r on r.service_id = s.id
+      where s.provider_id = $1 and s.status = 'done'
+      order by s.completed_at desc limit 50`,
+    [userId]
+  );
+  const reviews = await db.query(
+    `select u.name as client_name, r.stars, r.text, r.created_at
+       from reviews r join users u on u.id = r.client_id
+      where r.provider_id = $1 order by r.created_at desc limit 50`,
+    [userId]
+  );
+  const st = stats.rows[0];
+  return {
+    stats: {
+      ratingAvg: Number(st.rating_count) > 0 ? Number(st.rating_avg) : null,
+      ratingCount: Number(st.rating_count),
+      contacts: Number(st.contacts_count),
+      servicesDone: Number(st.services_done),
+      avgResponseMinutes: st.avg_response_minutes == null ? null : Number(st.avg_response_minutes),
+      active: st.active,
+    },
+    services: services.rows.map((r) => ({
+      conversationId: Number(r.contact_id),
+      clientName: r.client_name,
+      completedAt: r.completed_at,
+      stars: r.stars,
+    })),
+    reviews: reviews.rows.map((r) => ({ clientName: r.client_name, stars: r.stars, text: r.text, createdAt: r.created_at })),
+  };
+}
+
+module.exports = { get, save, dashboard };

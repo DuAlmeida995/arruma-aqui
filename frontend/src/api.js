@@ -80,5 +80,6 @@ export const api = {
   getRequest: (id) => request(`/requests/${id}`),
   closeRequest: (id) => post(`/requests/${id}/close`, {}),
   getProviderProfile: () => request("/provider/profile"),
+  getProviderDashboard: () => request("/provider/dashboard"),
   saveProviderProfile: (data) => request("/provider/profile", { method: "PUT", body: JSON.stringify(data) }),
 };

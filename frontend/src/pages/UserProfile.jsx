@@ -3,8 +3,15 @@ import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import Avatar from "../components/Avatar.jsx";
 import { api } from "../api.js";
+import { useAuth } from "../auth.jsx";
+import ProviderDashboard from "./ProviderDashboard.jsx";
 
 export default function UserProfile() {
+  const { user: authUser } = useAuth();
+  return authUser?.role === "provider" ? <ProviderDashboard /> : <ClientProfile />;
+}
+
+function ClientProfile() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 

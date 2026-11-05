@@ -46,6 +46,15 @@ router.get("/profile", async (req, res, next) => {
   }
 });
 
+// GET /api/provider/dashboard → números, serviços e avaliações (null se ainda não montou o perfil)
+router.get("/dashboard", async (req, res, next) => {
+  try {
+    res.json({ dashboard: await repo.dashboard(req.user.id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // PUT /api/provider/profile
 router.put("/profile", async (req, res, next) => {
   try {

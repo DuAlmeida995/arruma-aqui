@@ -54,6 +54,11 @@ describe.skipIf(!dbReady)("onboarding do prestador", () => {
     expect(res.status).toBe(403);
   });
 
+  it("painel é null antes de montar o perfil e cliente não acessa", async () => {
+    expect((await request(app).get("/api/provider/dashboard").set(auth(providerToken))).body.dashboard).toBeNull();
+    expect((await request(app).get("/api/provider/dashboard").set(auth(clientToken))).status).toBe(403);
+  });
+
   it("valida categoria, bairro e horários", async () => {
     const put = (body) => request(app).put("/api/provider/profile").set(auth(providerToken)).send(body);
     expect((await put({ ...profile, categories: [] })).body.error).toMatch(/categoria/);
@@ -87,6 +92,13 @@ describe.skipIf(!dbReady)("onboarding do prestador", () => {
   it("prestador passa a aparecer na busca de clientes", async () => {
     const res = await request(app).get("/api/professionals?cat=reparos&sort=dist").set(auth(clientToken));
     expect(res.body.results.map((p) => p.id)).toContain(providerId);
+  });
+
+  it("painel do prestador traz números zerados de um perfil novo", async () => {
+    const res = await request(app).get("/api/provider/dashboard").set(auth(providerToken));
+    expect(res.body.dashboard.stats).toMatchObject({ ratingAvg: null, ratingCount: 0, contacts: 0, servicesDone: 0, active: true });
+    expect(res.body.dashboard.services).toEqual([]);
+    expect(res.body.dashboard.reviews).toEqual([]);
   });
 
   it("desativar o perfil tira o prestador da busca", async () => {
