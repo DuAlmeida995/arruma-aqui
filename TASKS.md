@@ -5,7 +5,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 0 — Fundação
 - [x] Commitar o trabalho de UI pendente; `.gitignore` com `.env*`; `.env.example` no backend e frontend
 - [x] Vitest + Supertest no backend com 1 teste de `/api/health`; script `npm test`
-- [ ] (BLOQUEADO: ver BLOCKED.md — código pronto, falta CA) Backend lê `DATABASE_URL` e testa conexão com o Supabase (`/api/health` mostra `db: ok`)
+- [x] Backend lê `DATABASE_URL` e testa conexão com o Supabase (`/api/health` mostra `db: ok`)
 
 ## Fase 1 — Banco (Ativ. 2)
 - [x] Migration: extensão PostGIS; tabelas `users`, `provider_profiles` (com `geography(Point)` e `radius_km`), `categories`, `provider_categories`, `availability`, `requests`, `contacts`, `services`, `reviews`, `events`; FKs e índices (GIST na localização)
@@ -14,7 +14,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [ ] Trocar `mockData.js` pelas consultas ao banco mantendo os endpoints atuais (front continua funcionando)
 
 ## Fase 2 — Contas (Ativ. 5, 7)
-- [x] `POST /auth/register` (cliente ou prestador), `POST /auth/login`, `GET /auth/me`; bcrypt + JWT 24h; middleware de papel (testado com repositório em memória; SQL real pendente do banco)
+- [x] `POST /auth/register` (cliente ou prestador), `POST /auth/login`, `GET /auth/me`; bcrypt + JWT 24h; middleware de papel (validado também no Supabase)
 - [ ] Telas de cadastro e login; token no front; rotas protegidas; remover usuário fixo "Mariana"
 - [ ] Onboarding do prestador: categorias, bairro/CEP → coordenada aproximada, raio de atendimento, disponibilidade
 - [ ] Editar perfil (cliente e prestador); excluir conta (LGPD)
