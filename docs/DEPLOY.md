@@ -2,7 +2,7 @@
 
 Arquitetura: **frontend** (React/Vite) na **Vercel** → chama a **API** (Express) no **Render** → que usa o **Postgres/PostGIS** do **Supabase**. Tudo no plano gratuito.
 
-O banco já está pronto (migration aplicada e seed carregado). Faltam só as duas contas abaixo, que precisam ser criadas por uma pessoa do grupo.
+Antes de publicar cada versão, rode `npm run db:migrate --prefix backend` com a conexão do ambiente. A migration 002 adiciona a nota opcional de satisfação; não apaga dados. O seed fictício já foi carregado no banco de desenvolvimento. Faltam só as duas contas abaixo, que precisam ser criadas por uma pessoa do grupo.
 
 ## 1. Backend no Render (~5 min)
 
@@ -39,7 +39,7 @@ No link da Vercel:
 1. **Entrar** com `cliente@exemplo.com` / `demo1234` → a Home mostra "Recomendados para você".
 2. **Descreva o que você precisa** → crie um pedido → aparece a lista recomendada.
 3. Abra um profissional → **Conversar** → mande uma mensagem.
-4. No chat, **Marcar como realizado** → avalie com estrelas.
+4. No chat, **Marcar como realizado** → avalie com estrelas → responda opcionalmente ao questionário sobre o app.
 5. Saia e entre com `admin@exemplo.com` / `demo1234` → **Métricas da pesquisa** mostra os eventos acima.
 
 Contas de demo (todas fictícias, senha `demo1234`): `cliente@exemplo.com`, `admin@exemplo.com` e qualquer prestador do seed (ex.: `yara.lima@exemplo.com`).

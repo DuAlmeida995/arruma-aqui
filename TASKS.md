@@ -55,4 +55,4 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 9 — Acabamento (Ativ. 6)
 - [x] Questionário de satisfação (1–5) dentro do app ao fim do fluxo
 - [x] Estados vazios, carregamento e erros revisados em todas as telas
-- [ ] README atualizado (como rodar, como fazer deploy, credenciais de demo)
+- [x] README atualizado (como rodar, como fazer deploy, credenciais de demo)
