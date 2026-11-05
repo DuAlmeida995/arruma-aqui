@@ -31,6 +31,11 @@ export default function Settings() {
       <PageHeader title="Ajustes" />
 
       <Group label="Conta">
+        {user?.role === "provider" && (
+          <div onClick={() => navigate("/prestador/perfil")}>
+            <Row icon="wrench" title="Perfil profissional" sub="Categorias, área e horários" tint={["#FFF0EA", "#E04E22"]} />
+          </div>
+        )}
         {account.map((r) => (
           <Row key={r.title} {...r} />
         ))}

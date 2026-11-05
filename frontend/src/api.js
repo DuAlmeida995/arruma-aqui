@@ -70,4 +70,6 @@ export const api = {
   getConversation: (id) => request(`/conversations/${id}`),
   sendMessage: (id, text) => post(`/conversations/${id}/messages`, { text }),
   getUser: () => request("/user/me"),
+  getProviderProfile: () => request("/provider/profile"),
+  saveProviderProfile: (data) => request("/provider/profile", { method: "PUT", body: JSON.stringify(data) }),
 };

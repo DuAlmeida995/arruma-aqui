@@ -108,7 +108,7 @@ export function Login() {
 }
 
 export function Register() {
-  const { register, status } = useAuth();
+  const { register, status, user } = useAuth();
   const navigate = useNavigate();
   const [bairros, setBairros] = useState([]);
   const [form, setForm] = useState({ role: "client", name: "", email: "", password: "", bairro: "" });
@@ -124,8 +124,8 @@ export function Register() {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") navigate("/", { replace: true });
-  }, [status, navigate]);
+    if (status === "authenticated") navigate(user?.role === "provider" ? "/prestador/perfil" : "/", { replace: true });
+  }, [status, user, navigate]);
 
   async function submit(e) {
     e.preventDefault();

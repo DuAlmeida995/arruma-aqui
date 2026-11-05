@@ -4,9 +4,11 @@ import Icon from "../components/Icon.jsx";
 import ProCard from "../components/ProCard.jsx";
 import { categoryColor } from "../components/categoryColors.js";
 import { api } from "../api.js";
+import { useAuth } from "../auth.jsx";
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -120,6 +122,25 @@ export default function Home() {
           })}
         </div>
       </section>
+
+      {/* Atalho do prestador */}
+      {authUser?.role === "provider" && (
+        <section className="px-5 pt-7">
+          <button
+            className="pressable w-full text-left flex items-center gap-3.5 bg-white rounded-card shadow-card p-4 border-2 border-primary/30"
+            onClick={() => navigate("/prestador/perfil")}
+          >
+            <span className="w-11 h-11 rounded-[14px] bg-primary-soft flex items-center justify-center flex-none">
+              <Icon name="wrench" size={20} color="#E04E22" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-extrabold text-[14.5px]">Seu perfil profissional</span>
+              <span className="block text-[12.5px] text-inksoft font-medium">Categorias, área de atendimento e horários</span>
+            </span>
+            <Icon name="chevronRight" size={18} color="#A3A7B3" />
+          </button>
+        </section>
+      )}
 
       {/* Banner */}
       <section className="px-5 pt-7">

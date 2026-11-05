@@ -27,7 +27,9 @@ export default function Profile() {
     );
   }
 
-  const years = pro.exp.split(" ")[0];
+  const yearsMatch = pro.exp.match(/^(\d+)/);
+  const yearsLabel = yearsMatch ? `${yearsMatch[1]} ${yearsMatch[1] === "1" ? "ano" : "anos"}` : "—";
+  const isNew = pro.reviews === 0;
 
   return (
     <div className="flex-1 pb-36">
@@ -63,9 +65,9 @@ export default function Profile() {
 
       {/* Números */}
       <div className="grid grid-cols-3 gap-2.5 px-5 mt-5">
-        <Stat value={pro.rating.toFixed(1)} label="Nota média" icon={<Icon name="star" size={15} color="#F5B12E" />} />
+        <Stat value={isNew ? "Novo" : pro.rating.toFixed(1)} label="Nota média" icon={isNew ? null : <Icon name="star" size={15} color="#F5B12E" />} />
         <Stat value={pro.reviews} label="Avaliações" />
-        <Stat value={`${years} anos`} label="Experiência" />
+        <Stat value={yearsLabel} label="Experiência" />
       </div>
 
       <div className="flex gap-3 items-start mx-5 mt-4 p-4 bg-accent-soft rounded-[18px]">
@@ -96,8 +98,14 @@ export default function Profile() {
         title="Avaliações"
         right={
           <span className="flex items-center gap-1 text-[13px] font-bold">
-            <Icon name="star" size={14} color="#F5B12E" /> {pro.rating.toFixed(1)}
-            <span className="text-inksoft font-semibold">· {pro.reviews}</span>
+            {isNew ? (
+              <span className="text-inksoft font-semibold">Ainda sem avaliações</span>
+            ) : (
+              <>
+                <Icon name="star" size={14} color="#F5B12E" /> {pro.rating.toFixed(1)}
+                <span className="text-inksoft font-semibold">· {pro.reviews}</span>
+              </>
+            )}
           </span>
         }
       >

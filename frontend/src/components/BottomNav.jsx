@@ -11,7 +11,7 @@ const items = [
 ];
 
 // Telas com barra de ação própria (e as de login) escondem a navegação.
-const hiddenOn = [/^\/chat\/.+/, /^\/profissional\/.+/, /^\/entrar/, /^\/criar-conta/];
+const hiddenOn = [/^\/chat\/.+/, /^\/profissional\/.+/, /^\/entrar/, /^\/criar-conta/, /^\/prestador\/perfil/];
 
 export default function BottomNav() {
   const { pathname } = useLocation();

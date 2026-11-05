@@ -9,6 +9,7 @@ import ChatThread from "./pages/ChatThread.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Settings from "./pages/Settings.jsx";
 import { Login, Register } from "./pages/AuthPages.jsx";
+import ProviderProfileForm from "./pages/ProviderProfileForm.jsx";
 import { AuthProvider, RequireAuth } from "./auth.jsx";
 
 const protectedRoutes = [
@@ -19,6 +20,7 @@ const protectedRoutes = [
   ["/chat/:id", ChatThread],
   ["/perfil", UserProfile],
   ["/configuracoes", Settings],
+  ["/prestador/perfil", ProviderProfileForm],
 ];
 
 export default function App() {

@@ -23,7 +23,7 @@ function verifyToken(token) {
 
 // Nunca devolver hash de senha nem coordenadas exatas
 function publicUser(u) {
-  return { id: u.id, name: u.name, email: u.email, role: u.role, bairro: u.bairro ?? null, city: u.city ?? null, phone: u.phone ?? null };
+  return { id: Number(u.id), name: u.name, email: u.email, role: u.role, bairro: u.bairro ?? null, city: u.city ?? null, phone: u.phone ?? null };
 }
 
 module.exports = { hashPassword, checkPassword, signToken, verifyToken, publicUser };

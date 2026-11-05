@@ -22,8 +22,14 @@ export default function ProCard({ pro, index = 0, animate = true }) {
           <div className="text-[13px] text-inksoft font-semibold mt-0.5">{pro.role}</div>
           <div className="flex items-center gap-2 mt-2">
             <span className="flex items-center gap-1 bg-[#FFF6E4] text-[#9A6410] font-bold text-[12px] px-2 py-[3px] rounded-full">
-              <Icon name="star" size={12} color="#F5B12E" /> {pro.rating.toFixed(1)}
-              <span className="font-semibold text-[#9A6410]/70">({pro.reviews})</span>
+              {pro.reviews === 0 ? (
+                "Novo"
+              ) : (
+                <>
+                  <Icon name="star" size={12} color="#F5B12E" /> {pro.rating.toFixed(1)}
+                  <span className="font-semibold text-[#9A6410]/70">({pro.reviews})</span>
+                </>
+              )}
             </span>
             <span className="flex items-center gap-1 text-[12px] text-inksoft font-semibold">
               <Icon name="mappin" size={12} /> {pro.dist}
