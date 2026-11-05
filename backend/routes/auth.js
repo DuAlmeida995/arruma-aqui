@@ -1,7 +1,7 @@
 const express = require("express");
 const { z } = require("zod");
 const { hashPassword, checkPassword, signToken, publicUser } = require("../services/auth");
-const { requireAuth } = require("../middleware/auth");
+const { makeRequireAuth } = require("../middleware/auth");
 const bairros = require("../config/bairros");
 
 const registerSchema = z.object({
@@ -26,6 +26,7 @@ function firstError(result) {
 
 function createAuthRouter({ users }) {
   const router = express.Router();
+  const requireAuth = makeRequireAuth(users.findById);
 
   router.post("/register", async (req, res, next) => {
     try {

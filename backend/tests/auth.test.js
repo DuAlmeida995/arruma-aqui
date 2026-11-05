@@ -3,7 +3,7 @@ import express from "express";
 import request from "supertest";
 import jwt from "jsonwebtoken";
 import { createApp } from "../app.js";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { makeRequireAuth, requireRole } from "../middleware/auth.js";
 import { fakeUsers } from "./helpers/fakeUsers.js";
 
 beforeAll(() => {
@@ -116,14 +116,18 @@ describe("auth", () => {
     expect((await request(app).delete("/api/auth/me").set(auth).send({ password: "errada" })).status).toBe(403);
     expect((await request(app).delete("/api/auth/me").set(auth).send({ password: valid.password })).status).toBe(200);
     expect((await request(app).post("/api/auth/login").send({ email: valid.email, password: valid.password })).status).toBe(401);
-    expect((await request(app).get("/api/auth/me").set(auth)).status).toBe(404);
+    expect((await request(app).get("/api/auth/me").set(auth)).status).toBe(401);
   });
 
   it("requireRole bloqueia papel errado", async () => {
+    const roles = { 1: "client", 2: "provider" };
+    const requireAuth = makeRequireAuth(async (id) => (roles[id] ? { id, role: roles[id] } : null));
     const app = express();
     app.get("/so-prestador", requireAuth, requireRole("provider"), (req, res) => res.json({ ok: true }));
-    const token = (role) => jwt.sign({ sub: "1", role }, process.env.JWT_SECRET);
-    expect((await request(app).get("/so-prestador").set("Authorization", `Bearer ${token("client")}`)).status).toBe(403);
-    expect((await request(app).get("/so-prestador").set("Authorization", `Bearer ${token("provider")}`)).status).toBe(200);
+    // o papel vem do "banco", não do token
+    const token = (sub, role) => jwt.sign({ sub: String(sub), role }, process.env.JWT_SECRET);
+    expect((await request(app).get("/so-prestador").set("Authorization", `Bearer ${token(1, "provider")}`)).status).toBe(403);
+    expect((await request(app).get("/so-prestador").set("Authorization", `Bearer ${token(2, "client")}`)).status).toBe(200);
+    expect((await request(app).get("/so-prestador").set("Authorization", `Bearer ${token(99, "provider")}`)).status).toBe(401);
   });
 });

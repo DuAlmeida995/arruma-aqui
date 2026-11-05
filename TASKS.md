@@ -43,7 +43,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 
 ## Fase 7 — Qualidade e segurança (Ativ. 7)
 - [x] Validação de entrada (zod) em todas as rotas; rate limit no login
-- [ ] Testes de controle de acesso (cliente não acessa dados de outro, prestador não avalia, etc.)
+- [x] Testes de controle de acesso (cliente não acessa dados de outro, prestador não avalia, etc.)
 - [ ] Cobertura ≥ 70% nas regras de negócio (busca, ranking, auth)
 
 ## Fase 8 — Deploy
