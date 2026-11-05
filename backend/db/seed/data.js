@@ -23,22 +23,14 @@ const categories = [
   { id: "costura", label: "Costura", icon: "scissors", roles: { m: "Alfaiate", f: "Costureira" }, services: ["Ajuste de roupas", "Reparo de estofados", "Cortinas sob medida"] },
 ];
 
-// Centro aproximado de bairros de São Paulo [lat, lng]
-const bairros = {
-  "Vila Mariana": [-23.5891, -46.6346],
-  "Saúde": [-23.6178, -46.6390],
-  "Ipiranga": [-23.5893, -46.6062],
-  "Moema": [-23.6006, -46.6656],
-  "Perdizes": [-23.5365, -46.6763],
-  "Pinheiros": [-23.5667, -46.6919],
-  "Tatuapé": [-23.5403, -46.5763],
-  "Santana": [-23.5025, -46.6253],
-  "Butantã": [-23.5717, -46.7086],
-  "Mooca": [-23.5596, -46.5996],
-  "Lapa": [-23.5233, -46.7036],
-  "Jabaquara": [-23.6454, -46.6420],
-  "Parelheiros": [-23.8278, -46.7286], // região com poucos profissionais
-};
+// Bairros usados na base fictícia (ordem fixa = base determinística).
+// Parelheiros é a região com poucos profissionais.
+const allBairros = require("../../config/bairros");
+const bairros = Object.fromEntries(
+  ["Vila Mariana", "Saúde", "Ipiranga", "Moema", "Perdizes", "Pinheiros", "Tatuapé", "Santana", "Butantã", "Mooca", "Lapa", "Jabaquara", "Parelheiros"].map(
+    (b) => [b, allBairros[b]]
+  )
+);
 
 const firstNames = ["Ana", "Bruno", "Carla", "Daniel", "Eduarda", "Fábio", "Gabriela", "Hugo", "Isabela", "João", "Karina", "Lucas", "Mariana", "Nelson", "Olívia", "Pedro", "Quésia", "Rafael", "Sílvia", "Tiago", "Úrsula", "Vitor", "Wesley", "Yara", "Zeca", "Patrícia", "Rogério", "Luana", "Márcio", "Tânia"];
 const lastNames = ["Silva", "Souza", "Oliveira", "Santos", "Lima", "Pereira", "Costa", "Ferreira", "Almeida", "Ribeiro", "Carvalho", "Gomes", "Martins", "Rocha", "Barbosa", "Araújo", "Teixeira", "Moreira", "Cardoso", "Nunes"];

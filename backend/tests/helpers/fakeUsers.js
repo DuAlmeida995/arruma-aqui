@@ -10,8 +10,8 @@ export function fakeUsers() {
     async findById(uid) {
       return rows.find((u) => u.id === uid) || null;
     },
-    async create({ name, email, passwordHash, role, phone, bairro, city }) {
-      const u = { id: id++, name, email: email.toLowerCase(), password_hash: passwordHash, role, phone, bairro, city };
+    async create({ name, email, passwordHash, role, phone, bairro, city, lat, lng }) {
+      const u = { id: id++, name, email: email.toLowerCase(), password_hash: passwordHash, role, phone, bairro, city, lat, lng };
       rows.push(u);
       return u;
     },

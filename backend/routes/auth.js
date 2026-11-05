@@ -2,6 +2,7 @@ const express = require("express");
 const { z } = require("zod");
 const { hashPassword, checkPassword, signToken, publicUser } = require("../services/auth");
 const { requireAuth } = require("../middleware/auth");
+const bairros = require("../config/bairros");
 
 const registerSchema = z.object({
   name: z.string().trim().min(2, "Informe seu nome."),
@@ -9,8 +10,9 @@ const registerSchema = z.object({
   password: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres."),
   role: z.enum(["client", "provider"], { message: "Escolha se você é cliente ou prestador." }),
   phone: z.string().trim().max(20).optional(),
-  bairro: z.string().trim().max(80).optional(),
-  city: z.string().trim().max(80).optional(),
+  bairro: z
+    .string({ message: "Escolha seu bairro." })
+    .refine((b) => Object.hasOwn(bairros, b), "Escolha um bairro da lista."),
 });
 
 const loginSchema = z.object({
@@ -33,7 +35,14 @@ function createAuthRouter({ users }) {
       if (await users.findByEmail(data.email)) {
         return res.status(409).json({ error: "Este e-mail já está cadastrado. Tente entrar." });
       }
-      const user = await users.create({ ...data, passwordHash: await hashPassword(data.password) });
+      const [lat, lng] = bairros[data.bairro];
+      const user = await users.create({
+        ...data,
+        city: "São Paulo",
+        lat,
+        lng,
+        passwordHash: await hashPassword(data.password),
+      });
       res.status(201).json({ token: signToken(user), user: publicUser(user) });
     } catch (err) {
       next(err);

@@ -19,6 +19,7 @@ function createApp({ users = usersRepo } = {}) {
     res.json({ status: "ok", db: await checkDb() });
   });
 
+  app.get("/api/bairros", (req, res) => res.json(Object.keys(require("./config/bairros"))));
   app.use("/api/auth", createAuthRouter({ users }));
   app.use("/api/categories", categoriesRouter);
   app.use("/api/professionals", professionalsRouter);

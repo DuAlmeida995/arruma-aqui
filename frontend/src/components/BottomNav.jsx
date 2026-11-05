@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import Icon from "./Icon.jsx";
+import { useAuth } from "../auth.jsx";
 
 const items = [
   { to: "/", label: "Início", icon: "home" },
@@ -9,12 +10,13 @@ const items = [
   { to: "/configuracoes", label: "Ajustes", icon: "settings" },
 ];
 
-// Telas com barra de ação própria escondem a navegação.
-const hiddenOn = [/^\/chat\/.+/, /^\/profissional\/.+/];
+// Telas com barra de ação própria (e as de login) escondem a navegação.
+const hiddenOn = [/^\/chat\/.+/, /^\/profissional\/.+/, /^\/entrar/, /^\/criar-conta/];
 
 export default function BottomNav() {
   const { pathname } = useLocation();
-  if (hiddenOn.some((re) => re.test(pathname))) return null;
+  const { status } = useAuth();
+  if (status !== "authenticated" || hiddenOn.some((re) => re.test(pathname))) return null;
 
   return (
     <nav className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[430px] z-50 bg-white/90 backdrop-blur-xl border-t border-line shadow-[0_-8px_24px_-16px_rgba(20,23,31,.18)] flex justify-around px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">

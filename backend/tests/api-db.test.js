@@ -1,21 +1,57 @@
 // Testes de integração contra o banco (Supabase com o seed carregado).
 // São pulados se não houver DATABASE_URL + certificado CA.
-import { describe, it, expect, afterAll } from "vitest";
+import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import request from "supertest";
+import supertest from "supertest";
 import app from "../app.js";
 import db from "../db/index.js";
 
 const caPath = process.env.DB_CA_CERT || path.join(__dirname, "..", "db", "supabase-ca.crt");
 const dbReady = Boolean(process.env.DATABASE_URL) && fs.existsSync(caPath);
 const created = [];
+let token = null;
+
+// Requisições autenticadas como a cliente de demo (cliente@exemplo.com)
+const request = (a) => {
+  const agent = supertest(a);
+  const wrap = (m) => (url) => agent[m](url).set("Authorization", `Bearer ${token}`);
+  return { get: wrap("get"), post: wrap("post") };
+};
+
+beforeAll(async () => {
+  if (!dbReady) return;
+  const res = await supertest(app).post("/api/auth/login").send({ email: "cliente@exemplo.com", password: "demo1234" });
+  token = res.body.token;
+});
 
 afterAll(async () => {
   if (dbReady && created.length) await db.query("delete from messages where text = any($1)", [created]);
 });
 
 describe.skipIf(!dbReady)("API com banco", () => {
+  it("rotas de dados exigem login", async () => {
+    for (const url of ["/api/professionals", "/api/conversations", "/api/user/me"]) {
+      expect((await supertest(app).get(url)).status).toBe(401);
+    }
+  });
+
+  it("cadastro real grava localização e a busca usa o bairro do novo usuário", async () => {
+    const email = `novo.${Date.now()}@exemplo.com`;
+    const reg = await supertest(app)
+      .post("/api/auth/register")
+      .send({ name: "Novo Teste", email, password: "senha-forte-1", role: "client", bairro: "Penha" });
+    expect(reg.status).toBe(201);
+    try {
+      const me = await supertest(app).get("/api/user/me").set("Authorization", `Bearer ${reg.body.token}`);
+      expect(me.body.bairro).toBe("Penha");
+      const list = await supertest(app).get("/api/professionals?sort=dist").set("Authorization", `Bearer ${reg.body.token}`);
+      expect(list.body.results[0].bairro).toMatch(/Tatuapé|Mooca|Penha/);
+    } finally {
+      await db.query("delete from users where email = $1", [email]);
+    }
+  });
+
   it("lista as 8 categorias", async () => {
     const res = await request(app).get("/api/categories");
     expect(res.status).toBe(200);

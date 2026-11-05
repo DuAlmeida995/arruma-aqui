@@ -8,6 +8,18 @@ import ChatList from "./pages/ChatList.jsx";
 import ChatThread from "./pages/ChatThread.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import Settings from "./pages/Settings.jsx";
+import { Login, Register } from "./pages/AuthPages.jsx";
+import { AuthProvider, RequireAuth } from "./auth.jsx";
+
+const protectedRoutes = [
+  ["/", Home],
+  ["/buscar", Search],
+  ["/profissional/:id", Profile],
+  ["/chat", ChatList],
+  ["/chat/:id", ChatThread],
+  ["/perfil", UserProfile],
+  ["/configuracoes", Settings],
+];
 
 export default function App() {
   const { pathname } = useLocation();
@@ -17,17 +29,25 @@ export default function App() {
   }, [pathname]);
 
   return (
-    <div className="max-w-[430px] mx-auto bg-bg min-h-screen flex flex-col relative sm:shadow-[0_0_80px_-20px_rgba(20,23,31,.25)]">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/buscar" element={<Search />} />
-        <Route path="/profissional/:id" element={<Profile />} />
-        <Route path="/chat" element={<ChatList />} />
-        <Route path="/chat/:id" element={<ChatThread />} />
-        <Route path="/perfil" element={<UserProfile />} />
-        <Route path="/configuracoes" element={<Settings />} />
-      </Routes>
-      <BottomNav />
-    </div>
+    <AuthProvider>
+      <div className="max-w-[430px] mx-auto bg-bg min-h-screen flex flex-col relative sm:shadow-[0_0_80px_-20px_rgba(20,23,31,.25)]">
+        <Routes>
+          <Route path="/entrar" element={<Login />} />
+          <Route path="/criar-conta" element={<Register />} />
+          {protectedRoutes.map(([path, Page]) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <RequireAuth>
+                  <Page />
+                </RequireAuth>
+              }
+            />
+          ))}
+        </Routes>
+        <BottomNav />
+      </div>
+    </AuthProvider>
   );
 }

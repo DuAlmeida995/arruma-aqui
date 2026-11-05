@@ -15,7 +15,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 
 ## Fase 2 — Contas (Ativ. 5, 7)
 - [x] `POST /auth/register` (cliente ou prestador), `POST /auth/login`, `GET /auth/me`; bcrypt + JWT 24h; middleware de papel (validado também no Supabase)
-- [ ] Telas de cadastro e login; token no front; rotas protegidas; remover usuário fixo "Mariana"
+- [x] Telas de cadastro e login; token no front; rotas protegidas; remover usuário fixo "Mariana"
 - [ ] Onboarding do prestador: categorias, bairro/CEP → coordenada aproximada, raio de atendimento, disponibilidade
 - [ ] Editar perfil (cliente e prestador); excluir conta (LGPD)
 

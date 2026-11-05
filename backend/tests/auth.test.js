@@ -11,7 +11,7 @@ beforeAll(() => {
   process.env.JWT_EXPIRES_IN = "1h";
 });
 
-const valid = { name: "Teste Silva", email: "Teste@Exemplo.com", password: "senha-forte-1", role: "client" };
+const valid = { name: "Teste Silva", email: "Teste@Exemplo.com", password: "senha-forte-1", role: "client", bairro: "Moema" };
 
 function setup() {
   const users = fakeUsers();
@@ -41,6 +41,23 @@ describe("auth", () => {
     const res = await request(app).post("/api/auth/register").send({ ...valid, password: "123" });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/8 caracteres/);
+  });
+
+  it("exige bairro da lista e grava a localização aproximada", async () => {
+    const { app, users } = setup();
+    const bad = await request(app).post("/api/auth/register").send({ ...valid, bairro: "Rua X, 123" });
+    expect(bad.status).toBe(400);
+    expect(bad.body.error).toMatch(/bairro/i);
+    const ok = await request(app).post("/api/auth/register").send(valid);
+    expect(ok.status).toBe(201);
+    expect(users.rows[0]).toMatchObject({ bairro: "Moema", city: "São Paulo" });
+    expect(users.rows[0].lat).toBeCloseTo(-23.6006, 3);
+  });
+
+  it("lista de bairros é pública", async () => {
+    const { app } = setup();
+    const res = await request(app).get("/api/bairros");
+    expect(res.body).toContain("Vila Mariana");
   });
 
   it("não permite se cadastrar como admin", async () => {

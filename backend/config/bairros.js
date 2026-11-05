@@ -1,0 +1,25 @@
+// Centro aproximado de bairros de São Paulo [lat, lng].
+// LGPD: a localização de um usuário é o centro do bairro, nunca o endereço.
+module.exports = {
+  "Bela Vista": [-23.5614, -46.6497],
+  "Brooklin": [-23.6155, -46.6942],
+  "Butantã": [-23.5717, -46.7086],
+  "Consolação": [-23.5536, -46.6602],
+  "Ipiranga": [-23.5893, -46.6062],
+  "Itaim Bibi": [-23.5846, -46.6787],
+  "Jabaquara": [-23.6454, -46.642],
+  "Lapa": [-23.5233, -46.7036],
+  "Liberdade": [-23.5587, -46.6355],
+  "Moema": [-23.6006, -46.6656],
+  "Mooca": [-23.5596, -46.5996],
+  "Parelheiros": [-23.8278, -46.7286],
+  "Penha": [-23.5262, -46.5459],
+  "Perdizes": [-23.5365, -46.6763],
+  "Pinheiros": [-23.5667, -46.6919],
+  "Santana": [-23.5025, -46.6253],
+  "Santo Amaro": [-23.6539, -46.7108],
+  "Saúde": [-23.6178, -46.639],
+  "Tatuapé": [-23.5403, -46.5763],
+  "Vila Madalena": [-23.5531, -46.6918],
+  "Vila Mariana": [-23.5891, -46.6346],
+};

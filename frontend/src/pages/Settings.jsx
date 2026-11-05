@@ -2,9 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import PageHeader from "../components/PageHeader.jsx";
+import { useAuth } from "../auth.jsx";
 
-const account = [
-  { icon: "mappin", title: "Localização", sub: "Vila Mariana, São Paulo", tint: ["#E4F1FF", "#2F6FD6"] },
+const accountRows = (user) => [
+  {
+    icon: "mappin",
+    title: "Localização",
+    sub: user?.bairro ? `${user.bairro}, ${user.city || "São Paulo"}` : "Não informada",
+    tint: ["#E4F1FF", "#2F6FD6"],
+  },
   { icon: "lock", title: "Privacidade", tint: ["#EFEAFB", "#6A47C7"] },
   { icon: "shield", title: "Segurança", tint: ["#E3F3F1", "#0B7D72"] },
 ];
@@ -16,7 +22,9 @@ const support = [
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
+  const account = accountRows(user);
 
   return (
     <div className="flex-1 pb-32">
@@ -40,7 +48,10 @@ export default function Settings() {
       <div className="mx-5 mt-6">
         <button
           className="pressable w-full flex items-center justify-center gap-2 py-4 bg-danger-soft text-danger rounded-[18px] font-bold text-[14.5px]"
-          onClick={() => navigate("/")}
+          onClick={() => {
+            logout();
+            navigate("/entrar", { replace: true });
+          }}
         >
           <Icon name="logout" size={18} /> Sair da conta
         </button>

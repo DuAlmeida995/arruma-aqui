@@ -1,18 +1,63 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+const TOKEN_KEY = "arrumaaqui.token";
+
+// O token fica no localStorage; leitura/escrita protegidas (modo privado pode bloquear).
+export const tokenStore = {
+  get() {
+    try {
+      return localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set(token) {
+    try {
+      if (token) localStorage.setItem(TOKEN_KEY, token);
+      else localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* sem persistência: a sessão dura só enquanto a aba estiver aberta */
+    }
+  },
+};
+
+// Avisado quando a API responde 401 (sessão expirada) para o app voltar ao login.
+let onUnauthorized = () => {};
+export function setUnauthorizedHandler(fn) {
+  onUnauthorized = fn;
+}
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+  const token = tokenStore.get();
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new Error("Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.");
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Erro ${res.status}`);
+    if (res.status === 401 && token) onUnauthorized();
+    const err = new Error(body.error || `Erro ${res.status}`);
+    err.status = res.status;
+    throw err;
   }
   return res.json();
 }
 
+const post = (path, body) => request(path, { method: "POST", body: JSON.stringify(body) });
+
 export const api = {
+  login: (email, password) => post("/auth/login", { email, password }),
+  register: (data) => post("/auth/register", data),
+  me: () => request("/auth/me"),
+  getBairros: () => request("/bairros"),
   getCategories: () => request("/categories"),
   getProfessionals: (params = {}) => {
     const qs = new URLSearchParams(
@@ -23,7 +68,6 @@ export const api = {
   getProfessional: (id) => request(`/professionals/${id}`),
   getConversations: () => request("/conversations"),
   getConversation: (id) => request(`/conversations/${id}`),
-  sendMessage: (id, text) =>
-    request(`/conversations/${id}/messages`, { method: "POST", body: JSON.stringify({ text }) }),
+  sendMessage: (id, text) => post(`/conversations/${id}/messages`, { text }),
   getUser: () => request("/user/me"),
 };

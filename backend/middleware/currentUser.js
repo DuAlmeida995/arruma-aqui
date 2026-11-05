@@ -1,10 +1,8 @@
-// Identifica o usuário da requisição.
-// TEMPORÁRIO (até as telas de login – Fase 2.2): sem token, usa a conta de demo cliente@exemplo.com.
+// Identifica o usuário logado (token JWT) e carrega sua localização aproximada.
 const db = require("../db");
 const { verifyToken } = require("../services/auth");
 
-const DEMO_EMAIL = "cliente@exemplo.com";
-const FALLBACK_POINT = { lat: -23.5891, lng: -46.6346 }; // Vila Mariana
+const FALLBACK_POINT = { lat: -23.5505, lng: -46.6333 }; // centro de SP, se o usuário não tiver bairro
 
 async function loadUser(where, value) {
   const { rows } = await db.query(
@@ -29,8 +27,6 @@ async function currentUser(req, res, next) {
       }
       user = await loadUser("id", payload.id);
       if (!user) return res.status(401).json({ error: "Conta não encontrada. Entre novamente." });
-    } else {
-      user = await loadUser("email", DEMO_EMAIL);
     }
     if (!user) return res.status(401).json({ error: "Faça login para continuar." });
     if (user.lat == null) Object.assign(user, FALLBACK_POINT);
