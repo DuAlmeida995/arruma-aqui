@@ -1,10 +1,10 @@
 # Bloqueios (precisam de um humano)
 
-## 1. Certificado CA do Supabase (Fase 0.3)
-A conexão com o banco falha com `self-signed certificate in certificate chain`: o Supabase usa uma CA própria.
-Não vamos desligar a verificação TLS. Para resolver:
-1. Supabase Dashboard → **Project Settings → Database → SSL Configuration → Download certificate**.
-2. Salve o arquivo como `backend/db/supabase-ca.crt` (é um certificado público, pode ir para o git).
-3. Rode `node -e 'require("./db").checkDb().then(console.log)'` dentro de `backend/` — deve imprimir `ok`.
+## 1. ~~Certificado CA do Supabase~~ — resolvido
+`backend/db/supabase-ca.crt` salvo; a conexão TLS verificada funciona.
 
-Enquanto isso o loop escreve as migrations e o seed, mas não consegue aplicá-los no banco.
+## 2. Senha do banco incorreta (Fase 0.3)
+O Supabase responde `password authentication failed for user "postgres"`. Usuário, host e porta do `DATABASE_URL` estão no formato certo; só a senha não confere.
+1. Supabase Dashboard → **Project Settings → Database → Reset database password** (use só letras e números para evitar problemas de URL).
+2. Troque a senha no `DATABASE_URL` do `backend/.env`.
+3. Dentro de `backend/`: `node -e 'require("./db").checkDb().then(console.log)'` deve imprimir `ok`.
