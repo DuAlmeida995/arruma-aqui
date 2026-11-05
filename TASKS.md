@@ -4,7 +4,7 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 
 ## Fase 0 — Fundação
 - [x] Commitar o trabalho de UI pendente; `.gitignore` com `.env*`; `.env.example` no backend e frontend
-- [ ] Vitest + Supertest no backend com 1 teste de `/api/health`; script `npm test`
+- [x] Vitest + Supertest no backend com 1 teste de `/api/health`; script `npm test`
 - [ ] Backend lê `DATABASE_URL` e testa conexão com o Supabase (`/api/health` mostra `db: ok`)
 
 ## Fase 1 — Banco (Ativ. 2)
