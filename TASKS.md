@@ -49,7 +49,8 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 ## Fase 8 — Deploy
 - [x] Configuração pronta: `render.yaml` (Blueprint), CORS restrito por `CORS_ORIGIN`, `TRUST_PROXY`, guia `docs/DEPLOY.md`
 - [x] Repo privado `EnricoAranha/arruma-aqui-app` para o deploy (o original é do Eduardo; fork público não pode ser privado)
-- [ ] (humano) Reconectar o Render ao repo privado e apagar o fork público `EnricoAranha/arruma-aqui`; Eduardo torna o original privado
+- [x] Render publicando a partir do repo privado (conferido: `/api/health` mostra o commit em produção) e fork público apagado
+- [ ] (Eduardo) Tornar o original `DuAlmeida995/arruma-aqui` privado
 - [x] Backend no Render: https://arruma-aqui-api.onrender.com (deploy automático a partir do fork)
 - ~~Frontend na Vercel~~ (decisão: o produto é app; sem link web)
 - [x] Datas e horas no fuso de São Paulo (o Render roda em UTC)
