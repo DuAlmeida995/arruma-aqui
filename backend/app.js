@@ -48,7 +48,8 @@ function createApp({ users = usersRepo } = {}) {
   app.use(["/api/auth/login", "/api/auth/register"], authLimiter);
 
   app.get("/api/health", async (req, res) => {
-    res.json({ status: "ok", db: await checkDb() });
+    // versão = commit em produção (o Render define RENDER_GIT_COMMIT); útil para conferir deploys
+    res.json({ status: "ok", db: await checkDb(), version: (process.env.RENDER_GIT_COMMIT || "local").slice(0, 7) });
   });
 
   app.get("/api/bairros", (req, res) => res.json(Object.keys(require("./config/bairros"))));
