@@ -1,4 +1,6 @@
-# Deploy gratuito (Render + Vercel + Supabase)
+# Deploy gratuito (Render + Supabase) e app Android
+
+> **Decisão da equipe:** o produto é um **app Android** (ver `docs/APP.md`). A seção da Vercel abaixo é opcional — só se quiserem também um link web.
 
 Arquitetura: **frontend** (React/Vite) na **Vercel** → chama a **API** (Express) no **Render** → que usa o **Postgres/PostGIS** do **Supabase**. Tudo no plano gratuito.
 

@@ -47,12 +47,21 @@ Ordem = prioridade. O loop faz uma tarefa por iteração (ver `CLAUDE.md`). Entr
 - [x] Cobertura ≥ 70% nas regras de negócio (busca, ranking, auth) — hoje 91% linhas / 80% branches; `npm run coverage` falha abaixo de 70%
 
 ## Fase 8 — Deploy
-- [x] Configuração pronta: `render.yaml` (Blueprint), `frontend/vercel.json`, CORS restrito por `CORS_ORIGIN`, `TRUST_PROXY`, guia `docs/DEPLOY.md`
+- [x] Configuração pronta: `render.yaml` (Blueprint), CORS restrito por `CORS_ORIGIN`, `TRUST_PROXY`, guia `docs/DEPLOY.md`
+- [x] Fork `EnricoAranha/arruma-aqui` para o deploy (o original é do Eduardo)
 - [ ] (BLOQUEADO: alguém do grupo cria a conta — ver BLOCKED.md) Backend no Render com env vars
-- [ ] (BLOQUEADO: idem) Frontend na Vercel com `VITE_API_URL`
-- [ ] Smoke test no link público: cadastro → busca → contato → avaliação (depende dos dois acima)
+- ~~Frontend na Vercel~~ (decisão: o produto é app; sem link web)
+- [ ] Smoke test no app apontando para o Render: cadastro → busca → contato → avaliação (depende do Render)
 
 ## Fase 9 — Acabamento (Ativ. 6)
 - [x] Questionário de satisfação (1–5) dentro do app ao fim do fluxo
 - [x] Estados vazios, carregamento e erros revisados em todas as telas
 - [x] README atualizado (como rodar, como fazer deploy, credenciais de demo)
+
+## Fase 10 — App Android (Capacitor, webview)
+- [x] Capacitor 6 no frontend; projeto `android/`; nome "Arruma Aqui" (id `br.com.arrumaaqui.app`)
+- [x] CORS libera as origens do app; barra de status escura; conteúdo fora da área da barra (target SDK 34)
+- [x] APK de debug gerado (`npm run app:apk`, exige API https) e testado no emulador contra o backend local (`npm run app:apk:local`): login, Home e conversas OK
+- [ ] Ícone próprio do app (hoje usa o ícone padrão do Capacitor)
+- [ ] APK final apontando para o Render + smoke test no celular (depende do Render) — guia em `docs/APP.md`
+- ~~iOS~~ (decisão da equipe: só Android por enquanto)

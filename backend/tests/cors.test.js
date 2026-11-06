@@ -25,4 +25,13 @@ describe("CORS", () => {
     const res = await request(app).get("/api/health").set("Origin", "http://localhost:5173");
     expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
   });
+
+  it("sempre libera as origens do app (iOS e Android)", async () => {
+    process.env.CORS_ORIGIN = "https://outro.exemplo.com";
+    const app = createApp({ users: fakeUsers() });
+    for (const origin of ["capacitor://localhost", "https://localhost"]) {
+      const res = await request(app).get("/api/health").set("Origin", origin);
+      expect(res.headers["access-control-allow-origin"]).toBe(origin);
+    }
+  });
 });
