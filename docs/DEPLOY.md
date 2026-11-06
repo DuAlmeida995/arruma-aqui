@@ -4,18 +4,19 @@
 
 Arquitetura: **frontend** (React/Vite) na **Vercel** → chama a **API** (Express) no **Render** → que usa o **Postgres/PostGIS** do **Supabase**. Tudo no plano gratuito.
 
-> **Repositório do deploy:** o original (`DuAlmeida995/arruma-aqui`) está na conta do Eduardo, então o deploy usa o **fork `EnricoAranha/arruma-aqui`**. Depois de cada push no original, sincronize o fork para o deploy automático pegar a mudança:
+> **Repositório do deploy:** o original (`DuAlmeida995/arruma-aqui`) é do Eduardo, então o Render publica a partir do repositório **privado `EnricoAranha/arruma-aqui-app`**, uma cópia mantida em dia com:
 > ```bash
-> gh repo sync EnricoAranha/arruma-aqui
+> git remote add deploy https://github.com/EnricoAranha/arruma-aqui-app.git   # só na primeira vez
+> git push deploy main
 > ```
-> (ou no GitHub: abra o fork → **Sync fork** → **Update branch**).
+> Cada `push` nele dispara o deploy automático no Render.
 
 Antes de publicar cada versão, rode `npm run db:migrate --prefix backend` com a conexão do ambiente. A migration 002 adiciona a nota opcional de satisfação; não apaga dados. O seed fictício já foi carregado no banco de desenvolvimento. Faltam só as duas contas abaixo, que precisam ser criadas por uma pessoa do grupo.
 
 ## 1. Backend no Render (~5 min)
 
 1. Entre em <https://render.com> com o GitHub (conta gratuita).
-2. **New → Blueprint** → autorize o Render a ver seus repositórios e escolha **`EnricoAranha/arruma-aqui`**. O Render lê o arquivo `render.yaml` da raiz e cria o serviço `arruma-aqui-api`.
+2. **New → Blueprint** → autorize o Render a ver seus repositórios (inclusive os privados) e escolha **`EnricoAranha/arruma-aqui-app`**. O Render lê o arquivo `render.yaml` da raiz e cria o serviço `arruma-aqui-api`.
 3. Ele vai pedir os valores marcados como "sync: false":
    - `DATABASE_URL`: a mesma connection string do `backend/.env` (Supabase → Connect → Transaction pooler, porta 6543).
    - `CORS_ORIGIN`: deixe `http://localhost:5173` por enquanto; você troca no passo 3.
@@ -27,7 +28,7 @@ Antes de publicar cada versão, rode `npm run db:migrate --prefix backend` com a
 ## 2. Frontend na Vercel (~3 min)
 
 1. Entre em <https://vercel.com> com o GitHub (plano Hobby, gratuito).
-2. **Add New → Project** → importe **`EnricoAranha/arruma-aqui`**.
+2. **Add New → Project** → importe **`EnricoAranha/arruma-aqui-app`**.
 3. Em **Root Directory** escolha `frontend` (o `vercel.json` já define Vite, build e pasta `dist`).
 4. Em **Environment Variables** adicione:
    - `VITE_API_URL` = `https://<seu-servico>.onrender.com/api`
